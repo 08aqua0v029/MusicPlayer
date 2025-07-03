@@ -6,7 +6,7 @@
     </style>
 
     <style name="Theme.App.SplashOpening" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/black</item>
+        <item name="windowSplashScreenBackground">@color/white</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
     </style>
 </resources>
