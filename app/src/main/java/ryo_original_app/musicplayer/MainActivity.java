@@ -1,24 +1,49 @@
 package ryo_original_app.musicplayer;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.FileInputStream;
+import java.util.Arrays;
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageButton _btPlay;
-    private ImageButton _btBack;
-    private ImageButton _btNext;
-    private ImageView _artFile;
+    private ImageButton _btPlay;            // 再生・停止ボタン
+    private ImageButton _btBack;            // 戻るボタン
+    private ImageButton _btNext;            // 次へボタン
+    private ImageView _artFile;             // ジャケットファイル
+
+    /*
+    * 0:まだパーミッション許可を得ていない
+    * 1:パーミッション許可を1度得ている
+    *
+    **/
+    private int firstPermissionCheck = 0;                // パーミッション許可時の許可定数
 
     /*
     * 再生か一時停止化のフラグ
@@ -27,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     **/
     private int btPlayFlag = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             LogArea.logInput(error);
             super.onDestroy();
         }
+
+        // 権限を得る処理
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, 1);
 
         /* TODO:削除予定　別クラス呼び出す場合 */
         LogArea.logInput("test");
@@ -65,6 +94,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _btBack = findViewById(R.id.btBack);
         _btNext = findViewById(R.id.btNext);
 
+    }
+
+    // requestPermissionsのコールバック
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "権限が許可されました", Toast.LENGTH_SHORT).show();
+        }  else {
+            Toast.makeText(this, "音楽とオーディオの権限を許可してください", Toast.LENGTH_SHORT).show();
+            String uriString = "package:" + getPackageName();
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse(uriString));
+            startActivity(intent);
+        }
     }
 
     /* 再生・停止ボタン押下処理 */
