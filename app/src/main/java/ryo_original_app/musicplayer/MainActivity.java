@@ -57,21 +57,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // カスタムクラッシュハンドラを設定
+        Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler());
+
         /* スプラッシュのための中断処理 */
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
-            String error = e.toString();
-            /* ログ出力 */
-            LogArea.logInput(error);
             super.onDestroy();
         }
 
         // 権限を得る処理
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, 1);
-
-        /* TODO:削除予定　別クラス呼び出す場合 */
-        LogArea.logInput("test");
 
         /* 以下メイン画面描画用処理 */
         setTheme(R.style.Base_Theme_MusicPlayer);
@@ -103,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "権限が許可されました", Toast.LENGTH_SHORT).show();
+            createMusicList();
         }  else {
             Toast.makeText(this, "音楽とオーディオの権限を許可してください", Toast.LENGTH_SHORT).show();
             String uriString = "package:" + getPackageName();
@@ -142,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /* 楽曲データ取得 */
     private void createMusicList() {
+        System.out.println("音楽リスト作成");
     }
 
     /*
