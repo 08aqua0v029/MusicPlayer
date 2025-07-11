@@ -1,17 +1,13 @@
 package ryo_original_app.musicplayer;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,28 +18,26 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.Objects;
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    /* UI関係 */
     private ImageButton _btPlay;            // 再生・停止ボタン
     private ImageButton _btBack;            // 戻るボタン
     private ImageButton _btNext;            // 次へボタン
     private ImageView _artFile;             // ジャケットファイル
 
-    /*
-    * 0:まだパーミッション許可を得ていない
-    * 1:パーミッション許可を1度得ている
-    *
-    **/
-    private int firstPermissionCheck = 0;                // パーミッション許可時の許可定数
+    /* 音楽ファイル関係 */
+    private File fileDir;                   // 楽曲ディレクトリ
+    private File songList[];                // 楽曲一覧
+    private int totalSongNum = 0;           // 総楽曲数
+    private int nowSongNum = 0;             // 楽曲番号
+
 
     /*
     * 再生か一時停止化のフラグ
@@ -100,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "権限が許可されました", Toast.LENGTH_SHORT).show();
-            createMusicList();
+            songList = createMusicList();
         }  else {
             Toast.makeText(this, "音楽とオーディオの権限を許可してください", Toast.LENGTH_SHORT).show();
             String uriString = "package:" + getPackageName();
@@ -139,8 +133,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /* 楽曲データ取得 */
-    private void createMusicList() {
+    private File[] createMusicList() {
         System.out.println("音楽リスト作成");
+
+        // パス生成
+        String path = Environment.getExternalStorageDirectory().getPath();
+        // Fileクラスのオブジェクトを生成する
+        fileDir = new File(path + "/Music/");
+        File[] songList = fileDir.listFiles();
+        // 整形後の楽曲リストの定義
+        File[] repairSongList = null;
+
+        // 楽曲がある場合、楽曲データの整形を行う
+        if (songList != null) {
+            int repairSongLength = 0;
+            // ディレクトリからファイルのみ抽出して、楽曲数を数える
+            for (File file : songList) {
+                if (file.isFile()) {
+                    repairSongLength++;
+                }
+            }
+            // 正確な楽曲数を基にしたFile配列
+            repairSongList = new File[repairSongLength];
+
+            for (File file : songList) {
+                // 非整形楽曲データ配列を整形用配列に放り込む
+                if (file.isFile()) {
+                    repairSongList[totalSongNum] = file;
+                    totalSongNum++;
+                }
+            }
+        }
+
+        return repairSongList;
     }
 
     /*
@@ -162,6 +187,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     * 楽曲一覧画面の表示
     **/
     public void onSubMenu(View v) {
-        startActivity(new Intent(this, MusicList.class));
+
+        // 楽曲タイトルを配列化
+        String[] songListTitle = new String[totalSongNum];
+
+        // 楽曲タイトルをFile配列からString配列に代入
+        for(int i = 0; i < songList.length; i++) {
+            songListTitle[i] = songList[i].getName();
+        }
+
+        // 次画面への準備
+        Intent intent = new Intent(this, SongList.class);
+        intent.putExtra("songList", songListTitle);
+        startActivity(intent);
     }
 }
