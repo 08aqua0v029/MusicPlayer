@@ -1,4 +1,3 @@
-
 package ryo_original_app.musicplayer;
 
 import android.Manifest;
