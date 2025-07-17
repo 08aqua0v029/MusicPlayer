@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:id="@+id/music_list"
     android:background="@color/white"
-    tools:context=".SongList"
+    tools:context=".TunesList"
     >
 
     <ImageButton
@@ -32,7 +32,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
         <TextView
-            android:id="@+id/totalSongNum"
+            android:id="@+id/tunesTotalNum"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -42,7 +42,7 @@
             android:layout_gravity="center"/>
 
         <ListView
-            android:id="@+id/songsListMenu"
+            android:id="@+id/tunesListMenu"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
