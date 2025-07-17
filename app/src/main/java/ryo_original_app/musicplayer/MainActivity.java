@@ -1,3 +1,4 @@
+
 package ryo_original_app.musicplayer;
 
 import android.Manifest;
@@ -40,10 +41,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     /*
-    * 再生か一時停止化のフラグ
-    * 0:再生
-    * 1:一時停止
-    **/
+     * 再生か一時停止化のフラグ
+     * 0:再生
+     * 1:一時停止
+     **/
     private int btPlayFlag = 0;
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -176,16 +177,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /*
-    * TODO:全体実装後とりかかる
-    * 楽曲データシャッフル
-    **/
+     * TODO:全体実装後とりかかる
+     * 楽曲データシャッフル
+     **/
     private void shuffleMusicData() {
     }
 
     /*
-    * サブメニューボタン押下時の処理
-    * 楽曲一覧画面の表示
-    **/
+     * サブメニューボタン押下時の処理
+     * 楽曲一覧画面の表示
+     **/
     public void onSubMenu(View v) {
 
         // 楽曲タイトルを配列化
