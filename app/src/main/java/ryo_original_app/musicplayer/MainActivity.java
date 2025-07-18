@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -39,9 +41,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView _tuneNowTime;          // 1楽曲の今の再生時間
 
     /* 音楽ファイル関係 */
+    private MediaPlayer mediaPlayer;        // メディアプレイヤーインスタンス
     private File fileDir;                   // 楽曲ディレクトリ
-    private File tunesList[];                // 楽曲一覧
-    private int totalTunesNum = 0;           // 総楽曲数
+    private File tunesList[];               // 楽曲一覧
+    private int totalTunesNum = 0;          // 総楽曲数
     private int nowTuneNum = 0;             // 楽曲番号
 
     /* 正規表現用String */
@@ -108,9 +111,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "権限が許可されました", Toast.LENGTH_SHORT).show();
-            tunesList = createTunesList();
+            tunesList = createTunesList();  // 許可されたので、楽曲リストを作成する
         }  else {
             Toast.makeText(this, "音楽とオーディオの権限を許可してください", Toast.LENGTH_SHORT).show();
+
+            /* 設定画面への強制移動 */
             String uriString = "package:" + getPackageName();
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse(uriString));
             startActivity(intent);
@@ -119,12 +124,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /* 再生・停止ボタン押下処理 */
     public void onPlayButton(View v) {
+        /*
+        * 再生停止処理
+        * 0:再生　1:一時停止　2:一時停止からの再生
+        * */
         if(btPlayFlag == 0) {
-            _btPlay.setImageResource(R.drawable.stop);
-            btPlayFlag = 1;
+            _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+            btPlayFlag = 1;         // 一時停止フラグを立てる
+            tuneSetup();            // 楽曲セットアップ
+            mediaPlayer.start();    // プレイヤースタート
         } else if(btPlayFlag == 1) {
-            _btPlay.setImageResource(R.drawable.start);
-            btPlayFlag = 0;
+            _btPlay.setImageResource(R.drawable.start); // ボタン画像を変える
+            btPlayFlag = 2;         // 再度再生フラグを立てる
+            mediaPlayer.pause();    // プレイヤー一時停止
+        } else if (btPlayFlag == 2) {
+            _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+            btPlayFlag = 1;         // 一時停止フラグを立てる
+            mediaPlayer.start();    // 楽曲セットアップをせずに、一時停止したところから再生
         }
     }
 
@@ -140,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         System.out.println("tsugihe");
     }
 
+    /**
+     * クリック処理
+     * @Returns:なし
+    * */
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btPlay){
@@ -153,9 +173,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /* 楽曲データ取得 */
     private File[] createTunesList() {
-        String path = Environment.getExternalStorageDirectory().getPath();  // パス生成
-        fileDir = new File(path + "/Music/");                      // Fileクラスのオブジェクトを生成する
-        tunesList = fileDir.listFiles();
+        String path = Environment.getExternalStorageDirectory().getPath();   // パス生成
+        fileDir = new File(path + "/Music/");                       // Fileクラスのオブジェクトを生成する
+        tunesList = fileDir.listFiles();                                     // フォルダ内データをリストに突っ込む
         File[] repairTunesList = null;                                       // 整形後の楽曲リストの定義
         totalTunesNum = 0;                                                   // 総楽曲数の初期化
 
@@ -176,11 +196,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             repairTunesList = new File[repairTuneLength];                    // 正確な楽曲数を基にしたFile配列
 
+            /* 非整形楽曲データ配列を整形用配列に放り込む
+             *  対応拡張子だけ抜粋
+             * */
             for (File file : tunesList) {
                 String filenameString = file.toString();
-                /* 非整形楽曲データ配列を整形用配列に放り込む
-                *  対応拡張子だけ抜粋
-                * */
+
                 if (file.isFile()
                         && (filenameString.toLowerCase().endsWith(mp3String)
                         || filenameString.toLowerCase().endsWith(wavString)
@@ -192,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             /* 最初の楽曲データ取り出し */
             if (totalTunesNum > 0) {
-                nowTune(0);
+                nowTune(nowTuneNum);
             }
 
         }
@@ -200,6 +221,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return repairTunesList;
     }
 
+    /*
+    * 今の楽曲データ取得
+    * */
     private void nowTune(int i) {
         /* 楽曲UI各種定義 */
         _tuneTitle = findViewById(R.id.tuneTitle);
@@ -207,25 +231,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _tuneNowTime = findViewById(R.id.tuneNowTime);
 
         /* メタデータ取り出し */
-        Uri mediaFileUri = Uri.parse(tunesList[i].toString());  // 音声ファイルのURI文字列を元にURIオブジェクトを生成
-        MediaMetadataRetriever tuneData = new MediaMetadataRetriever(); // メタ情報取り出しのためのクラス
-        tuneData.setDataSource(mediaFileUri.toString());        // URIをもとにデータをセットする
-        String tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
-        String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）
+            try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
+            tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
+            String tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
+            String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）
 
-        /* 楽曲時間（ミリ秒）の変換作業 */
-        int secTmp = Integer.parseInt(tuneTotalTime) / 1000;    // ミリ秒を秒に
-        int tuneTotalTimeMin = (secTmp % 3600) / 60;            // 秒を分化し分のみを抽出
-        int tuneTotalTimeSec = secTmp % 60;                     // 秒を60で割った余りが分を除いた秒になる
-        tuneTotalTime = (tuneTotalTimeMin + ":" + tuneTotalTimeSec);
+            /* 楽曲時間（ミリ秒）の変換作業 */
+            int secTmp = Integer.parseInt(tuneTotalTime) / 1000;    // ミリ秒を秒に
+            int tuneTotalTimeMin = (secTmp % 3600) / 60;            // 秒を分化し分のみを抽出
+            int tuneTotalTimeSec = secTmp % 60;                     // 秒を60で割った余りが分を除いた秒になる
+            tuneTotalTime = (tuneTotalTimeMin + ":" + tuneTotalTimeSec);    // 時間を整形
 
-        _tuneTitle.setText(tuneTitle);
-        _tuneTotalTime.setText(tuneTotalTime);
+            /* UI側にテキストを代入 */
+            _tuneTitle.setText(tuneTitle);
+            _tuneTotalTime.setText(tuneTotalTime);
 
-        /* アートファイルの導入 */
-        byte[] data = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
-        if (null != data) { // データが無ければnullにする
-            _artFile.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));   // 画像データの代入
+            /* アートファイルの導入 */
+            byte[] data = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
+            if (null != data) { // データが無ければnullにする
+                _artFile.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));   // 画像データの代入
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void tuneSetup(){
+        /* 楽曲データ取得 */
+        mediaPlayer = new MediaPlayer();    // インスタンス化
+        String nowTuneDir = tunesList[nowTuneNum].toString();   // 楽曲までのディレクトリをString化
+
+        try {
+            mediaPlayer.setDataSource(nowTuneDir);  // メディアプレイヤーに楽曲データをセット
+            mediaPlayer.prepare();                  // 再生準備（同期）
+        } catch (IOException e) {
+            Toast.makeText(this, "再生エラー: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

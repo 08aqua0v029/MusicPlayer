@@ -8,6 +8,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +35,7 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
         ArrayAdapter adapter = new ArrayAdapter(TunesList.this,android.R.layout.simple_list_item_1,list);
         setTunesList.setAdapter(adapter);
         setTotalTunesNum.setText("楽曲リスト:全" + tuneList.length + "曲");
+
     }
 
     /* バツボタン押下時の処理　メイン画面に戻る */
