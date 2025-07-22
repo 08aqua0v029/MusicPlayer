@@ -17,6 +17,8 @@ public class Constants {
     /* 文章、String */
         /** コロンString */
         public static final String colonString = ":";
+        /** 楽曲等時間初期値 */
+        public static final String initialTime = "00:00";
         /** パーミッション許可文 */
         public static final String permissionSentence = "権限が許可されました";
         /** パーミッション非許可文 */

@@ -64,13 +64,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /** 総楽曲数 */
     private int totalTunesNum = 0;
     /** 楽曲番号 */
-    private final int nowTuneNum = 0;
+    private int nowTuneNum = 0;
 
     /**
-     * 再生か一時停止化のフラグ
-     * 0:再生　1:一時停止　2:一時停止からの再生
+     * 再生状態
+     * 0:停止　1:再生　2:一時停止
      */
-    private int btPlayFlag = 0;
+    private int playState = 0;
 
     /**
      * 生成処理
@@ -148,28 +148,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
+     * クリック処理
+     * @Param v View情報
+     * @Return なし
+     */
+    @Override
+    public void onClick(View v) {
+        if(v.getId() == R.id.btPlay){
+            onPlayButton(v);
+        } else if(v.getId() == R.id.btBack) {
+            onBackButton(v);
+        } else if(v.getId() == R.id.btNext) {
+            onNextButton(v);
+        }
+    }
+
+    /**
      * 再生・停止ボタン押下処理
      * @Param v View情報
      * @Return なし
      */
     public void onPlayButton(View v) {
         /*
-        * 再生停止処理
-        * 0:再生　1:一時停止　2:一時停止からの再生
-        * */
-        if(btPlayFlag == 0) {
+         * 再生停止処理　以下状態
+         * 0:停止　1:再生　2:一時停止
+         * */
+        if(playState == 0) {
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
-            btPlayFlag = 1;         // 一時停止フラグを立てる
             tuneSetup();            // 楽曲セットアップ
             mediaPlayer.start();    // プレイヤースタート
-        } else if(btPlayFlag == 1) {
+            playState = 1;          // 再生状態にする
+        } else if(playState == 1) {
             _btPlay.setImageResource(R.drawable.start); // ボタン画像を変える
-            btPlayFlag = 2;         // 再度再生フラグを立てる
             mediaPlayer.pause();    // プレイヤー一時停止
-        } else if (btPlayFlag == 2) {
+            playState = 2;          // 一時停止状態にする
+        } else if (playState == 2) {
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
-            btPlayFlag = 1;         // 一時停止フラグを立てる
             mediaPlayer.start();    // 楽曲セットアップをせずに、一時停止したところから再生
+            playState = 1;          // 再生状態にする
         }
     }
 
@@ -189,28 +205,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @Return なし
      */
     public void onNextButton(View v) {
-        /* TODO:実装後削除 */
-        System.out.println("tsugihe");
-    }
+        /* 再生中の場合は楽曲を念の為止める */
+        if(playState == 1){
+            mediaPlayer.stop();
+        }
 
-    /**
-     * クリック処理
-     * @Param v View情報
-     * @Return なし
-     */
-    @Override
-    public void onClick(View v) {
-        if(v.getId() == R.id.btPlay){
-            onPlayButton(v);
-        } else if(v.getId() == R.id.btBack) {
-            onBackButton(v);
-        } else if(v.getId() == R.id.btNext) {
-            onNextButton(v);
+        /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
+        /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
+        /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
+        if(totalTunesNum - 1 > nowTuneNum) {
+            nowTuneNum++;
+            _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+            nowTune(nowTuneNum);    // 楽曲データ取得
+            tuneSetup();            // 楽曲セットアップ
+            mediaPlayer.start();    // プレイヤースタート
+            playState = 1;          // 再生状態にする
+        } else {
+            /* TODO: リピート機能未実装のため、総楽曲一周したら一度停止処理をかます */
+            nowTuneNum = 0;         // 楽曲番号のリセット
+            _btPlay.setImageResource(R.drawable.start);  // ボタン画像を変える
+            nowTune(nowTuneNum);    // 楽曲データ取得
+            tuneSetup();            // 楽曲セットアップ
+            mediaPlayer.stop();     // 楽曲停止
+            playState = 0;          // 停止状態にする
         }
     }
 
     /**
-     * 楽曲データ取得
+     * 全楽曲データ取得
      * @Return なし
      */
     private File[] createTunesList() {
@@ -288,11 +310,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）
 
             /* 楽曲時間（ミリ秒）の変換作業 */
-            int secTmp = Integer.parseInt(tuneTotalTime) / 1000;    // ミリ秒を秒に
-            int tuneTotalTimeMin = (secTmp % 3600) / 60;            // 秒を分化し分のみを抽出
-            int tuneTotalTimeSec = secTmp % 60;                     // 秒を60で割った余りが分を除いた秒になる
-            tuneTotalTime = (tuneTotalTimeMin + Constants.colonString + tuneTotalTimeSec);    // 時間を整形
-
+            if(tuneTotalTime != null) {
+                int secTmp = Integer.parseInt(tuneTotalTime) / 1000;    // ミリ秒を秒に
+                int tuneTotalTimeMin = (secTmp % 3600) / 60;            // 秒を分化し分のみを抽出
+                int tuneTotalTimeSec = secTmp % 60;                     // 秒を60で割った余りが分を除いた秒になる
+                tuneTotalTime = (tuneTotalTimeMin + Constants.colonString + tuneTotalTimeSec);    // 時間を整形
+            } else {
+                tuneTotalTime = Constants.initialTime;
+            }
             /* UI側にテキストを代入 */
             _tuneTitle.setText(tuneTitle);
             _tuneTotalTime.setText(tuneTotalTime);
@@ -308,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 楽曲セットアップ
+     * 楽曲再生準備
      * @Return なし
      */
     private void tuneSetup(){
