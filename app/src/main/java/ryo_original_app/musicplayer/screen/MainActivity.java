@@ -74,8 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 生成処理
-     * @Param savedInstanceState Activity破棄時インスタンス状態を保存
-     * @Return なし
+     * @param savedInstanceState Activity破棄時インスタンス状態を保存
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,10 +124,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * requestPermissionsのコールバック（音楽ファイルパーミッション取得）
-     * @Param requestCode
-     * @Param permissions
-     * @Param grantResults OSが許可を出したかどうか
-     * @Return なし
+     * @param requestCode 未使用
+     * @param permissions 未使用
+     * @param grantResults OSが許可を出したかどうか
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -149,8 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * クリック処理
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     @Override
     public void onClick(View v) {
@@ -165,8 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 再生・停止ボタン押下処理
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     public void onPlayButton(View v) {
         /*
@@ -191,8 +187,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 戻るボタン押下処理
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     public void onBackButton(View v) {
         /* TODO:実装後削除 */
@@ -201,8 +196,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 次ボタン押下処理
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     public void onNextButton(View v) {
         /* 再生中の場合は楽曲を念の為止める */
@@ -213,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
         /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
         /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
-        if(totalTunesNum - 1 > nowTuneNum) {
+        if(totalTunesNum -1 > nowTuneNum) {
             nowTuneNum++;
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
             nowTune(nowTuneNum);    // 楽曲データ取得
@@ -233,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 全楽曲データ取得
-     * @Return なし
+     * @return 正確な楽曲数を基にしたFile配列
      */
     private File[] createTunesList() {
         String path = Environment.getExternalStorageDirectory().getPath();   // パス生成
@@ -272,14 +266,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 正確な楽曲数の計算
-     * @Param なし
-     * @Return 計算した正確な楽曲数
+     * @return 計算した正確な楽曲数
      */
     private int getRepairTuneLength() {
         int repairTuneLength = 0;                                       // 整形後の楽曲数
-        /* ディレクトリからファイルのみ抽出して、楽曲数を数える
-        *  対応拡張子だけ抜粋
-        * */
+        /* ディレクトリからファイルのみ抽出して、楽曲数を数える　対応拡張子だけ抜粋 */
         for (File file : tunesList) {
             String filenameString = file.toString();
             if (file.isFile()
@@ -294,8 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 今の楽曲データ取得
-     * @Param i 楽曲番号
-     * @Return なし
+     * @param i 楽曲番号
      */
     private void nowTune(int i) {
         /* 楽曲UI各種定義 */
@@ -334,7 +324,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 楽曲再生準備
-     * @Return なし
      */
     private void tuneSetup(){
         /* 楽曲データ取得 */
@@ -352,7 +341,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * TODO:全体実装後とりかかる
      * 楽曲データリピート
-     * @Return なし
      */
     private void repeatTuneData() {
     }
@@ -360,15 +348,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * TODO:全体実装後とりかかる
      * 楽曲データシャッフル
-     * @Return なし
      */
     private void shuffleTuneData() {
     }
 
     /**
      * サブメニューボタン押下時の処理（楽曲一覧画面の表示）
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     public void onSubMenu(View v) {
 

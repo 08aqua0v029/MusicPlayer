@@ -39,24 +39,18 @@ public class Constants {
         public static final String tunesListClass = "TunesList";
 
     /* ログ関連 */
-        /** クラッシュハンドラログ用タグ */
-        public static final String crashHandlerLogTag = "クラッシュハンドラ";
-        /** クラッシュハンドラログ用メッセージ */
-        public static final String crashHandlerLogMsg = "Uncaught Exception:";
-        /** クラッシュ画面ログ用タグ */
-        public static final String crashScreenLogTag = "クラッシュした画面";
-        /** クラッシュ画面ログ用メッセージ */
-        public static final String crashScreenLogMsg = "App crashed on screen:";
-        /** クラッシュ時刻ログ用タグ */
-        public static final String crashTimeLogTag = "クラッシュ時刻";
-        /** クラッシュ時刻ログ用メッセージ */
+        /** クラッシュハンドラ */
+        public static final String crashHandler = "CrashHandler";
+        /** エラー内容ログ用MSG */
+        public static final String errorTypeLogTag = "エラー内容";
+        /** エラー詳細ログ用MSG */
+        public static final String errorDetailsLogTag = "クラッシュ箇所";
+        /** クラッシュ画面ログ用MSG */
+        public static final String crashLocationLogTag = "クラッシュ箇所";
+        /** クラッシュ時刻ログ用MSG */
         public static final String crashTimeLogMsg = "Crashed time:";
-        /** 機種情報ログ用タグ */
-        public static final String modelLogTag = "機種情報";
-        /** 機種情報ログ用メッセージ */
+        /** 機種情報ログ用MSG */
         public static final String modelLogMsg = "Build.MODEL:";
-        /** OSバージョンログ用タグ */
-        public static final String osVerLogTag = "OS情報";
-        /** OSバージョンログ用メッセージ */
+        /** OSバージョンログ用MSG */
         public static final String osVerLogMsg = "Build.VERSION.BASE_OS:Android";
 }

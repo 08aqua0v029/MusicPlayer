@@ -22,8 +22,7 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
 
     /**
      * 生成処理
-     * @Param savedInstanceState Activity破棄時インスタンス状態を保存
-     * @Return なし
+     * @param savedInstanceState Activity破棄時インスタンス状態を保存
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +49,7 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
 
     /**
      * バツボタン押下時の処理　メイン画面に戻る
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     public void onMenuCancel(View v) {
         finish();
@@ -59,8 +57,7 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
 
     /**
      * クリック処理
-     * @Param v View情報
-     * @Return なし
+     * @param v View情報
      */
     @Override
     public void onClick(View v) {
