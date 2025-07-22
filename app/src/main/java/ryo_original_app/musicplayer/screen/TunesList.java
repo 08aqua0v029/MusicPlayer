@@ -1,4 +1,4 @@
-package ryo_original_app.musicplayer;
+package ryo_original_app.musicplayer.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Arrays;
 import java.util.List;
+
+import ryo_original_app.musicplayer.R;
+import ryo_original_app.musicplayer.constants.Constants;
+import ryo_original_app.musicplayer.log.ScreenTracker;
 
 /**
  * 楽曲リスト表示画面
@@ -25,22 +29,22 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         /* 楽曲リスト画面遷移 */
         super.onCreate(savedInstanceState);
-        ScreenTracker.setCurrentScreen("TunesList"); // 今の画面名を保存している
+        ScreenTracker.setCurrentScreen(Constants.tunesListClass); // 今の画面名を保存している
         setContentView(R.layout.tunes_list);
 
         // 前画面から楽曲リストを取得
         Intent intent = getIntent();
-        String[] tuneList = intent.getStringArrayExtra("tunesList");
+        String[] tunesList = intent.getStringArrayExtra("tunesList");
 
         // 画面定義
         ListView setTunesList = findViewById(R.id.tunesListMenu);
         TextView setTotalTunesNum = findViewById(R.id.tunesTotalNum);
 
-        List<String> list = Arrays.asList(tuneList);
+        List<String> list = Arrays.asList(tunesList);
 
         ArrayAdapter adapter = new ArrayAdapter(TunesList.this,android.R.layout.simple_list_item_1,list);
         setTunesList.setAdapter(adapter);
-        setTotalTunesNum.setText("楽曲リスト:全" + tuneList.length + "曲");
+        setTotalTunesNum.setText(String.format(Constants.tunesListSentence,tunesList.length));
 
     }
 

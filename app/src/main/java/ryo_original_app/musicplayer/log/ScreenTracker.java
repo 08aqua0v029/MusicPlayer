@@ -1,4 +1,4 @@
-package ryo_original_app.musicplayer;
+package ryo_original_app.musicplayer.log;
 
 /**
  * 画面名を保存するクラス

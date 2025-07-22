@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:id="@+id/tuneList"
     android:background="@color/white"
-    tools:context=".TunesList"
+    tools:context=".screen.TunesList"
     >
 
     <ImageButton

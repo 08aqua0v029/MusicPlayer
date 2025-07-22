@@ -1,4 +1,4 @@
-package ryo_original_app.musicplayer;
+package ryo_original_app.musicplayer.screen;
 
 import android.Manifest;
 import android.content.Intent;
@@ -27,6 +27,11 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
 import java.io.IOException;
+
+import ryo_original_app.musicplayer.constants.Constants;
+import ryo_original_app.musicplayer.log.CustomExceptionHandler;
+import ryo_original_app.musicplayer.R;
+import ryo_original_app.musicplayer.log.ScreenTracker;
 
 /**
  * メインクラス
@@ -61,13 +66,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /** 楽曲番号 */
     private final int nowTuneNum = 0;
 
-    /** 正規表現用String */
-    private final String mp3String = ".mp3";
-    /** 正規表現用String */
-    private final String wavString = ".wav";
-    /** 正規表現用String */
-    private final String m4aString = ".m4a";
-
     /**
      * 再生か一時停止化のフラグ
      * 0:再生　1:一時停止　2:一時停止からの再生
@@ -83,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        ScreenTracker.setCurrentScreen("MainActivity"); // 今の画面名を保存している
+        ScreenTracker.setCurrentScreen(Constants.mainActivityClass); // 今の画面名を保存している
 
         /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
         Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler());
@@ -137,10 +135,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "権限が許可されました", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, Constants.permissionSentence, Toast.LENGTH_SHORT).show();
             tunesList = createTunesList();  // 許可されたので、楽曲リストを作成する
         }  else {
-            Toast.makeText(this, "音楽とオーディオの権限を許可してください", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, Constants.unauthorizedSentence, Toast.LENGTH_SHORT).show();
 
             /* 設定画面への強制移動 */
             String uriString = "package:" + getPackageName();
@@ -217,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private File[] createTunesList() {
         String path = Environment.getExternalStorageDirectory().getPath();   // パス生成
-        fileDir = new File(path + "/Music/");                       // Fileクラスのオブジェクトを生成する
+        fileDir = new File(path + Constants.musicFolder);           // Fileクラスのオブジェクトを生成する
         tunesList = fileDir.listFiles();                                     // フォルダ内データをリストに突っ込む
         File[] repairTunesList = null;                                       // 整形後の楽曲リストの定義
         totalTunesNum = 0;                                                   // 総楽曲数の初期化
@@ -232,9 +230,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String filenameString = file.toString();
 
                 if (file.isFile()
-                        && (filenameString.toLowerCase().endsWith(mp3String)
-                        || filenameString.toLowerCase().endsWith(wavString)
-                        || filenameString.toLowerCase().endsWith(m4aString))) {
+                        && (filenameString.toLowerCase().endsWith(Constants.mp3String)
+                        || filenameString.toLowerCase().endsWith(Constants.wavString)
+                        || filenameString.toLowerCase().endsWith(Constants.m4aString))) {
                     repairTunesList[totalTunesNum] = file;
                     totalTunesNum++;
                 }
@@ -263,9 +261,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (File file : tunesList) {
             String filenameString = file.toString();
             if (file.isFile()
-                    && (filenameString.toLowerCase().endsWith(mp3String)
-                    || filenameString.toLowerCase().endsWith(wavString)
-                    || filenameString.toLowerCase().endsWith(m4aString))) {
+                    && (filenameString.toLowerCase().endsWith(Constants.mp3String)
+                    || filenameString.toLowerCase().endsWith(Constants.wavString)
+                    || filenameString.toLowerCase().endsWith(Constants.m4aString))) {
                 repairTuneLength++;
             }
         }
@@ -293,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int secTmp = Integer.parseInt(tuneTotalTime) / 1000;    // ミリ秒を秒に
             int tuneTotalTimeMin = (secTmp % 3600) / 60;            // 秒を分化し分のみを抽出
             int tuneTotalTimeSec = secTmp % 60;                     // 秒を60で割った余りが分を除いた秒になる
-            tuneTotalTime = (tuneTotalTimeMin + ":" + tuneTotalTimeSec);    // 時間を整形
+            tuneTotalTime = (tuneTotalTimeMin + Constants.colonString + tuneTotalTimeSec);    // 時間を整形
 
             /* UI側にテキストを代入 */
             _tuneTitle.setText(tuneTitle);
@@ -322,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mediaPlayer.setDataSource(nowTuneDir);  // メディアプレイヤーに楽曲データをセット
             mediaPlayer.prepare();                  // 再生準備（同期）
         } catch (IOException e) {
-            Toast.makeText(this, "再生エラー: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, Constants.playErrorSentence + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

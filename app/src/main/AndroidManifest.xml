@@ -15,7 +15,7 @@
         android:theme="@style/Base.Theme.MusicPlayer"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".screen.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.App.SplashOpening"
             >
@@ -25,7 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TunesList"
+        <activity android:name=".screen.TunesList"
             android:label="string/app_name">
         </activity>
     </application>
