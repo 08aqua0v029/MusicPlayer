@@ -83,7 +83,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler());    // カスタムクラッシュハンドラを設定
+        ScreenTracker.setCurrentScreen("MainActivity"); // 今の画面名を保存している
+
+        /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
+        Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler());
 
         /* スプラッシュのための中断処理 */
         try {

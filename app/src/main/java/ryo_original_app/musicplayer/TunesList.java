@@ -25,6 +25,7 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         /* 楽曲リスト画面遷移 */
         super.onCreate(savedInstanceState);
+        ScreenTracker.setCurrentScreen("TunesList"); // 今の画面名を保存している
         setContentView(R.layout.tunes_list);
 
         // 前画面から楽曲リストを取得
