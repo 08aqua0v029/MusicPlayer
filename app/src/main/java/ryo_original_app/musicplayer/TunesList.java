@@ -8,14 +8,19 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 楽曲リスト表示画面
+ */
 public class TunesList extends AppCompatActivity implements View.OnClickListener{
+
+    /**
+     * 生成処理
+     * @Param savedInstanceState Activity破棄時インスタンス状態を保存
+     * @Return なし
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         /* 楽曲リスト画面遷移 */
@@ -38,11 +43,20 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
 
     }
 
-    /* バツボタン押下時の処理　メイン画面に戻る */
+    /**
+     * バツボタン押下時の処理　メイン画面に戻る
+     * @Param v View情報
+     * @Return なし
+     */
     public void onMenuCancel(View v) {
         finish();
     }
 
+    /**
+     * クリック処理
+     * @Param v View情報
+     * @Return なし
+     */
     @Override
     public void onClick(View v) {
     }
