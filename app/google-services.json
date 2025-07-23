@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161143871910",
+    "project_id": "mymusicapp-f57aa",
+    "storage_bucket": "mymusicapp-f57aa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161143871910:android:192d6c851f88772a341767",
+        "android_client_info": {
+          "package_name": "ryo_original_app.musicplayer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK_wf3MT04n7Ohw5r8s5RH435RFB4CegU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

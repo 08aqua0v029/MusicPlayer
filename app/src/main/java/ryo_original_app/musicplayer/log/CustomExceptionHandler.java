@@ -6,9 +6,13 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import ryo_original_app.musicplayer.constants.Constants;
 
@@ -36,17 +40,36 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
 
         // エラー詳細抽出
         Throwable rootCause = getCause(e);
-        String errorType = rootCause.getClass().getName();
-        String message = rootCause.getMessage();
-        String location = rootCause.getStackTrace().length > 0 ? rootCause.getStackTrace()[0].toString() : "検出できず";
+        String errorType = rootCause.getClass().getName();  // エラー内容
+        String message = rootCause.getMessage();    // エラー詳細
+        String location = rootCause.getStackTrace().length > 0 ? rootCause.getStackTrace()[0].toString() : "検出できず"; // クラッシュ箇所（getCauseにてクラッシュ箇所が何らかの理由で0だった場合は検出できない旨を三項演算子で表現）
 
-        Log.e(Constants.crashHandler, Constants.errorTypeLogTag + errorType);               // エラー内容
-        Log.e(Constants.crashHandler, Constants.errorDetailsLogTag + message);              // エラー詳細
-        Log.e(Constants.crashHandler, Constants.crashLocationLogTag + location);            // クラッシュ箇所
+        /* クラッシュ時刻を整形 */
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.formatDateTime);
+        String formatCrashDateTime = formatter.format(LocalDateTime.now());
 
-        Log.i(Constants.crashHandler, Constants.crashTimeLogMsg + LocalDateTime.now());     // クラッシュ時刻
-        Log.i(Constants.crashHandler, Constants.modelLogMsg + Build.MODEL);                 // クラッシュ端末
-        Log.i(Constants.crashHandler, Constants.osVerLogMsg+ Build.VERSION.RELEASE);        // クラッシュOSバージョン
+        /* クラッシュ詳細をログ出力 */
+        Log.e(Constants.crashHandler, Constants.errorTypeLogKey + Constants.colonString + errorType);               // エラー内容
+        Log.e(Constants.crashHandler, Constants.errorDetailsLogKey + Constants.colonString + message);              // エラー詳細
+        Log.e(Constants.crashHandler, Constants.crashLocationLogKey + Constants.colonString + location);            // クラッシュ箇所
+        Log.i(Constants.crashHandler, Constants.crashTimeLogKey + Constants.colonString + formatCrashDateTime);     // クラッシュ時刻
+        Log.i(Constants.crashHandler, Constants.modelLogKey + Constants.colonString + Build.MODEL);                 // クラッシュ端末
+        Log.i(Constants.crashHandler, Constants.osVerLogKey + Constants.colonString + Build.VERSION.RELEASE);        // クラッシュOSバージョン
+
+        /* ログデータをJSON化 */
+        try {
+            JSONObject logJson = new JSONObject();
+            logJson.put(Constants.errorTypeLogKey, errorType);
+            logJson.put(Constants.errorDetailsLogKey, message);
+            logJson.put(Constants.crashLocationLogKey, location);
+            logJson.put(Constants.crashTimeLogKey, LocalDateTime.now());
+            logJson.put(Constants.modelLogKey, Build.MODEL);
+            logJson.put(Constants.osVerLogKey, Build.VERSION.RELEASE);
+
+            Log.e("crashLogJson", logJson.toString(4));
+        } catch (JSONException ex) {
+            throw new RuntimeException(ex);
+        }
 
         // 最後にデフォルトのハンドラを呼び出す（アプリを終了させるため）
         if (defaultHandler != null) {

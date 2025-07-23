@@ -6,6 +6,10 @@ import ryo_original_app.musicplayer.screen.TunesList;
  * 定数クラス
  */
 public class Constants {
+    /* フォーマット */
+        /** フォーマットとした日時 */
+        public static final String formatDateTime = "yyyy-MM-dd HH:mm:ss";
+
     /* 正規表現 */
         /** 正規表現用String mp3 */
         public static final String mp3String = ".mp3";
@@ -41,16 +45,16 @@ public class Constants {
     /* ログ関連 */
         /** クラッシュハンドラ */
         public static final String crashHandler = "CrashHandler";
-        /** エラー内容ログ用MSG */
-        public static final String errorTypeLogTag = "エラー内容";
-        /** エラー詳細ログ用MSG */
-        public static final String errorDetailsLogTag = "クラッシュ箇所";
-        /** クラッシュ画面ログ用MSG */
-        public static final String crashLocationLogTag = "クラッシュ箇所";
-        /** クラッシュ時刻ログ用MSG */
-        public static final String crashTimeLogMsg = "Crashed time:";
-        /** 機種情報ログ用MSG */
-        public static final String modelLogMsg = "Build.MODEL:";
-        /** OSバージョンログ用MSG */
-        public static final String osVerLogMsg = "Build.VERSION.BASE_OS:Android";
+        /** エラー内容ログ用キー */
+        public static final String errorTypeLogKey = "エラー内容";
+        /** エラー詳細ログ用キー */
+        public static final String errorDetailsLogKey = "クラッシュ箇所";
+        /** クラッシュ画面ログ用キー */
+        public static final String crashLocationLogKey = "クラッシュ箇所";
+        /** クラッシュ時刻ログ用キー */
+        public static final String crashTimeLogKey = "Crashed time";
+        /** 機種情報ログ用キー */
+        public static final String modelLogKey = "Build.MODEL";
+        /** OSバージョンログ用キー */
+        public static final String osVerLogKey = "Build.VERSION.BASE_OS:Android";
 }
