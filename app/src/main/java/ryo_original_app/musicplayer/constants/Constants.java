@@ -6,6 +6,17 @@ import ryo_original_app.musicplayer.screen.TunesList;
  * 定数クラス
  */
 public class Constants {
+    /* URI関連 */
+        /** ローカル環境のURI */
+        /*
+         * adb -s ZY22GXG7JX reverse tcp:8000 tcp:8000
+         * でAndroid実機でもローカルアクセスが簡単にできる
+         * ZY22GXG7JXは端末シリアル名
+         */
+        public static final String localApiUri = "http://localhost:8000/logApi.php";
+        /** 本番環境のURI */
+        public static final String ApiUri = "";
+
     /* フォーマット */
         /** フォーマットとした日時 */
         public static final String formatDateTime = "yyyy-MM-dd HH:mm:ss";
@@ -21,6 +32,8 @@ public class Constants {
     /* 文章、String */
         /** コロンString */
         public static final String colonString = ":";
+        /** スラッシュ */
+        public static final String slashString = "/";
         /** 楽曲等時間初期値 */
         public static final String initialTime = "00:00";
         /** パーミッション許可文 */
@@ -32,9 +45,13 @@ public class Constants {
         /** 楽曲リスト曲数表示テキスト */
         public static final String tunesListSentence = "楽曲リスト:全 %s曲";
 
-    /* フォルダ名 */
+    /* フォルダ名、ファイル名 */
         /** 音楽保管フォルダ */
         public static final String musicFolder = "/Music/";
+        /** ログ保管フォルダ */
+        public static final String logFolder = "log";
+        /** ログファイル */
+        public static final String logFile = "crash_log.json";
 
     /* クラス名 */
         /** クラス名:MainActivity */

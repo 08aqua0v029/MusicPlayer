@@ -1,16 +1,23 @@
 package ryo_original_app.musicplayer.screen;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -32,11 +39,16 @@ import ryo_original_app.musicplayer.constants.Constants;
 import ryo_original_app.musicplayer.log.CustomExceptionHandler;
 import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.log.ScreenTracker;
+import ryo_original_app.musicplayer.log.SendLogApi;
 
 /**
  * メインクラス
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private Context context;
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
 
     /* UI関係 */
     /** 再生・停止ボタン */
@@ -80,10 +92,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        this.context = getApplicationContext();
         ScreenTracker.setCurrentScreen(Constants.mainActivityClass); // 今の画面名を保存している
 
         /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
-        Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler());
+        Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(context));
+
+        /* ネットワーク接続状態なら、JSONデータのサーバー保存を行う */
+        if(networkConnect()) {
+            SendLogApi.sendJsonFile(context);
+        }else{
+            Log.d("Network", "ネットワークに接続されていません");
+        }
 
         /* スプラッシュのための中断処理 */
         try {
@@ -143,6 +163,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse(uriString));
             startActivity(intent);
         }
+    }
+
+    public boolean networkConnect() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return false;
+
+        Network network = cm.getActiveNetwork();
+        if (network == null) return false;
+
+        NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+        return capabilities != null &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
     }
 
     /**
@@ -207,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
         /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
         /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
-        if(totalTunesNum -1 > nowTuneNum) {
+        if(totalTunesNum > nowTuneNum) {
             nowTuneNum++;
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
             nowTune(nowTuneNum);    // 楽曲データ取得
