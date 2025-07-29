@@ -1,7 +1,5 @@
 package ryo_original_app.musicplayer.constants;
 
-import ryo_original_app.musicplayer.screen.TunesList;
-
 /**
  * 定数クラス
  */
@@ -40,6 +38,8 @@ public class Constants {
         public static final String permissionSentence = "権限が許可されました";
         /** パーミッション非許可文 */
         public static final String unauthorizedSentence = "音楽とオーディオの権限を許可してください";
+        /** 楽曲データがない場合のエラー文 */
+        public static final String nonMusicDate = "楽曲が存在しないため、各種機能が使えません";
         /** 再生エラー文 */
         public static final String playErrorSentence = "再生エラー: ";
         /** 楽曲リスト曲数表示テキスト */

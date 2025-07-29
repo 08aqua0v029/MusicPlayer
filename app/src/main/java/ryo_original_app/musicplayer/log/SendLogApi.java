@@ -39,17 +39,18 @@ public class SendLogApi {
                     /* 送信したいデータ（バイト配列）を送信 */
                     OutputStream os = connection.getOutputStream();
                     os.write(json.getBytes(StandardCharsets.UTF_8));
+                    os.close();
 
                     int responseCode = connection.getResponseCode();
                     /* レスポンスが200番台だったら成功とし、ファイルを削除 */
                     if (responseCode >= 200 && responseCode < 300) {
                         inputFile.delete();  // 削除
                     } else {
-                        Log.e("WARNING!!","送信エラー");
+                        Log.w("WARNING!!","送信エラー");
                     }
                     Log.d("SUCCESS", "サーバーへの転送完了");
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    Log.e("ERROR", "サーバー停止などの理由で転送不可", e);
                 }
             }).start();
         }else{
