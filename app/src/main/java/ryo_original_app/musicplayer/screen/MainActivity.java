@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
         /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
         /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
-        if(totalTunesNum > nowTuneNum) {
+        if(totalTunesNum -1 > nowTuneNum) {
             nowTuneNum++;
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
             nowTune(nowTuneNum);    // 楽曲データ取得
