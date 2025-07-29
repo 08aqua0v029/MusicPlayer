@@ -16,7 +16,7 @@ public class SendLogApi {
      * JSONログをサーバーへ送信
      * @param context アプリの情報
      */
-    public static void sendJsonFile(Context context) {
+    public static void sendJsonLog(Context context, String apiUri) {
         /* ファイルの準備 */
         File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.logFile);
 
@@ -30,7 +30,7 @@ public class SendLogApi {
                     String json = new String(Files.readAllBytes(inputFile.toPath()), StandardCharsets.UTF_8);
 
                     /* サーバーへ送信作業 */
-                    URL url = new URL(Constants.localApiUri);
+                    URL url = new URL(apiUri);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("POST");
                     connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");

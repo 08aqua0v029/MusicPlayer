@@ -5,15 +5,16 @@ package ryo_original_app.musicplayer.constants;
  */
 public class Constants {
     /* URI関連 */
-        /** ローカル環境のURI */
         /*
          * adb -s ZY22GXG7JX reverse tcp:8000 tcp:8000
          * でAndroid実機でもローカルアクセスが簡単にできる
          * ZY22GXG7JXは端末シリアル名
          */
-        public static final String localApiUri = "http://localhost:8000/logApi.php";
+    /* クラッシュログAPI */
+        /** ローカル環境のURI */
+        public static final String ApiUri = "http://localhost:8000/clashLogApi.php";
         /** 本番環境のURI */
-        public static final String ApiUri = "";
+        // public static final String ApiUri = "";
 
     /* フォーマット */
         /** フォーマットとした日時 */

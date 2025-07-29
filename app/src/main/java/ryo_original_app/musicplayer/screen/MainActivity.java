@@ -97,9 +97,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
         Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(context));
 
-        /* ネットワーク接続状態なら、JSONデータのサーバー保存を行う */
+        /* ネットワーク接続状態なら、クラッシュJSONログのサーバー保存を行う */
         if(networkConnect()) {
-            SendLogApi.sendJsonFile(context);
+            SendLogApi.sendJsonLog(context, Constants.ApiUri);
         }else{
             Log.d("Network", "ネットワークに接続されていません");
         }
