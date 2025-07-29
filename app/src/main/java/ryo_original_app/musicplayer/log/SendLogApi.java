@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Base64;
 
 import ryo_original_app.musicplayer.constants.Constants;
 
@@ -36,19 +37,32 @@ public class SendLogApi {
                     connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                     connection.setDoOutput(true);   // 送信の許可
 
+                    /* Basic認証設定 */
+                    final String userPass = Constants.basicUser + ":" + Constants.basicPass;    // ユーザー:パス形式の設定
+                    String encodeAuthorization = Base64.getEncoder().encodeToString(userPass.getBytes());   // ユーザー:パスをBASE64形式に変換
+                    connection.setRequestProperty("Authorization", "Basic " + encodeAuthorization);     // Basic認証設定をヘッダにセット
+
                     /* 送信したいデータ（バイト配列）を送信 */
                     OutputStream os = connection.getOutputStream();
                     os.write(json.getBytes(StandardCharsets.UTF_8));
                     os.close();
 
+                    /* レスポンス情報取得 */
                     int responseCode = connection.getResponseCode();
+                    String contentType = connection.getHeaderField("Content-Type");
+                    String serverStatus = connection.getHeaderField("Status");
+
                     /* レスポンスが200番台だったら成功とし、ファイルを削除 */
                     if (responseCode >= 200 && responseCode < 300) {
                         inputFile.delete();  // 削除
+                        Log.d("SUCCESS", "response:" + String.valueOf(responseCode));
+                        Log.d("SUCCESS", "contentType:" + contentType);
+                        Log.d("SUCCESS", "serverStatus:" + serverStatus);
                     } else {
-                        Log.w("WARNING!!","送信エラー");
+                        Log.e("ERROR", "response:" + String.valueOf(responseCode));
+                        Log.e("ERROR", "contentType:" + contentType);
+                        Log.e("ERROR", "serverStatus:" + serverStatus);
                     }
-                    Log.d("SUCCESS", "サーバーへの転送完了");
                 } catch (Exception e) {
                     Log.e("ERROR", "サーバー停止などの理由で転送不可", e);
                 }

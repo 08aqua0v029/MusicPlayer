@@ -16,6 +16,12 @@ public class Constants {
         /** 本番環境のURI */
         // public static final String ApiUri = "";
 
+    /* BASIC認証用 */
+        /** ユーザー名 */
+        public static final String basicUser = "u6Kg5t2c";
+        /** パスワード */
+        public static final String basicPass = "Zp6uaUzY";
+
     /* フォーマット */
         /** フォーマットとした日時 */
         public static final String formatDateTime = "yyyy-MM-dd HH:mm:ss";
@@ -75,4 +81,7 @@ public class Constants {
         public static final String modelLogKey = "Build.MODEL";
         /** OSバージョンログ用キー */
         public static final String osVerLogKey = "Build.VERSION.BASE_OS:Android";
+
+    /* レスポンスコード */
+        // public static final int response200 = 200;
 }
