@@ -68,19 +68,19 @@ public class Constants {
 
     /* ログ関連 */
         /** クラッシュハンドラ */
-        public static final String crashHandler = "CrashHandler";
+        public static final String crashHandler = "crashHandler";
         /** エラー内容ログ用キー */
-        public static final String errorTypeLogKey = "エラー内容";
+        public static final String errorTypeLogKey = "crashType";
         /** エラー詳細ログ用キー */
-        public static final String errorDetailsLogKey = "クラッシュ箇所";
+        public static final String errorDetailsLogKey = "crashDetails";
         /** クラッシュ画面ログ用キー */
-        public static final String crashLocationLogKey = "クラッシュ箇所";
+        public static final String crashLocationLogKey = "crashLocation";
         /** クラッシュ時刻ログ用キー */
-        public static final String crashTimeLogKey = "Crashed time";
+        public static final String crashTimeLogKey = "crashedTime";
         /** 機種情報ログ用キー */
-        public static final String modelLogKey = "Build.MODEL";
+        public static final String modelLogKey = "buildModel";
         /** OSバージョンログ用キー */
-        public static final String osVerLogKey = "Build.VERSION.BASE_OS:Android";
+        public static final String osVerLogKey = "buildOsVersion";
 
     /* レスポンスコード */
         // public static final int response200 = 200;

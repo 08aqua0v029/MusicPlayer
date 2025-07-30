@@ -6,8 +6,8 @@ public enum MusicStatus {
     START("再生", 1),
     PAUSE("一時停止", 2);
 
-    private String label;
-    private int id;
+    private final String label;
+    private final int id;
 
 
     private MusicStatus(String label, int id) {	//コンストラクタはprivateで宣言

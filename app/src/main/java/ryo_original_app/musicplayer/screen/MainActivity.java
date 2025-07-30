@@ -277,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
             /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
             /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
+            //if (totalTunesNum > nowTuneNum) {
             if (totalTunesNum -1 > nowTuneNum) {
                 nowTuneNum++;
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
@@ -367,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _tuneNowTime = findViewById(R.id.tuneNowTime);
 
         /* メタデータ取り出し */
-            try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
+        try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
             tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
             String tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
             String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）

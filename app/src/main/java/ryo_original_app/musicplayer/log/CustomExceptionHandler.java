@@ -76,7 +76,7 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
             logJson.put(Constants.crashLocationLogKey, location);
             logJson.put(Constants.crashTimeLogKey, formatCrashDateTime);
             logJson.put(Constants.modelLogKey, Build.MODEL);
-            logJson.put(Constants.osVerLogKey, Build.VERSION.RELEASE);
+            logJson.put(Constants.osVerLogKey, "Android:" + Build.VERSION.RELEASE);
 
             Log.e("crashLogJson", logJson.toString(4));
 
