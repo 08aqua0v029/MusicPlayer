@@ -17,7 +17,7 @@ public class SendLogApi {
      * JSONログをサーバーへ送信
      * @param context アプリの情報
      */
-    public static void sendJsonLog(Context context, String apiUri) {
+    public static void sendJsonLog(Context context, String apiUri, String basicUser, String basicPass) {
         /* ファイルの準備 */
         File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.logFile);
 
@@ -38,7 +38,7 @@ public class SendLogApi {
                     connection.setDoOutput(true);   // 送信の許可
 
                     /* Basic認証設定 */
-                    final String userPass = Constants.basicUser + ":" + Constants.basicPass;    // ユーザー:パス形式の設定
+                    final String userPass = basicUser + ":" + basicPass;    // ユーザー:パス形式の設定
                     String encodeAuthorization = Base64.getEncoder().encodeToString(userPass.getBytes());   // ユーザー:パスをBASE64形式に変換
                     connection.setRequestProperty("Authorization", "Basic " + encodeAuthorization);     // Basic認証設定をヘッダにセット
 

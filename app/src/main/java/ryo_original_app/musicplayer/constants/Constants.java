@@ -17,10 +17,10 @@ public class Constants {
         // public static final String ApiUri = "";
 
     /* BASIC認証用 */
-        /** ユーザー名 */
-        public static final String basicUser = "u6Kg5t2c";
-        /** パスワード */
-        public static final String basicPass = "Zp6uaUzY";
+        /** クラッシュログ用ユーザー名 */
+        public static final String clashLogBasicUser = "u6Kg5t2c";
+        /** クラッシュログ用パスワード */
+        public static final String clashLogBasicPass = "Zp6uaUzY";
 
     /* フォーマット */
         /** フォーマットとした日時 */
