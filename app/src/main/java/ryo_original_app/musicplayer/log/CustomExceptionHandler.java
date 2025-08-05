@@ -48,7 +48,6 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
      */
     @Override
     public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-        String currentScreen = ScreenTracker.getCurrentScreen();    // クラッシュ前に保存された画面名を取得
 
         // エラー詳細抽出
         Throwable rootCause = getCause(e);

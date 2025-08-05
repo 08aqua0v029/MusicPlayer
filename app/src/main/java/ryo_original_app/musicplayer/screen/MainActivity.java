@@ -10,8 +10,6 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,7 +39,6 @@ import ryo_original_app.musicplayer.Enum.MusicStatus;
 import ryo_original_app.musicplayer.constants.Constants;
 import ryo_original_app.musicplayer.log.CustomExceptionHandler;
 import ryo_original_app.musicplayer.R;
-import ryo_original_app.musicplayer.log.ScreenTracker;
 import ryo_original_app.musicplayer.log.SendLogApi;
 
 /**
@@ -92,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onCreate(savedInstanceState);
         this.context = getApplicationContext();
-        ScreenTracker.setCurrentScreen(Constants.mainActivityClass); // 今の画面名を保存している
 
         /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
         Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(context));
