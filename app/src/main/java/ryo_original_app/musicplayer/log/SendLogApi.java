@@ -19,7 +19,7 @@ public class SendLogApi {
      */
     public static void sendJsonLog(Context context, String apiUri, String basicUser, String basicPass) {
         /* ファイルの準備 */
-        File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.logFile);
+        File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.crashLogFile);
 
         /* JSONファイルの存在有無チェック */
         if (inputFile.exists()){
@@ -55,20 +55,26 @@ public class SendLogApi {
                     /* レスポンスが200番台だったら成功とし、ファイルを削除 */
                     if (responseCode >= 200 && responseCode < 300) {
                         inputFile.delete();  // 削除
-                        Log.d("SUCCESS", "response:" + String.valueOf(responseCode));
-                        Log.d("SUCCESS", "contentType:" + contentType);
-                        Log.d("SUCCESS", "serverStatus:" + serverStatus);
+                        Log.d(Constants.successTag,
+                                Constants.responseString + Constants.colonString + String.valueOf(responseCode));
+                        Log.d(Constants.successTag,
+                                Constants.contentTypeString + Constants.colonString + contentType);
+                        Log.d(Constants.successTag,
+                                Constants.serverStatusString + Constants.colonString + serverStatus);
                     } else {
-                        Log.e("ERROR", "response:" + String.valueOf(responseCode));
-                        Log.e("ERROR", "contentType:" + contentType);
-                        Log.e("ERROR", "serverStatus:" + serverStatus);
+                        Log.e(Constants.errorTag,
+                                Constants.responseString + Constants.colonString + String.valueOf(responseCode));
+                        Log.e(Constants.errorTag,
+                                Constants.contentTypeString + Constants.colonString + contentType);
+                        Log.e(Constants.errorTag,
+                                Constants.serverStatusString + Constants.colonString + serverStatus);
                     }
                 } catch (Exception e) {
-                    Log.e("ERROR", "サーバー停止などの理由で転送不可", e);
+                    Log.e(Constants.errorTag, Constants.severErrorSentence, e);
                 }
             }).start();
         }else{
-            Log.d("info", "ログファイルが存在しません");
+            Log.d(Constants.infoTag, Constants.nonLogFile);
         }
     }
 }

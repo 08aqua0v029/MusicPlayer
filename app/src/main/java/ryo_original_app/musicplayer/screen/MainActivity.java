@@ -99,9 +99,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* ネットワーク接続状態なら、クラッシュJSONログのサーバー保存を行う */
         if(networkConnect()) {
-            SendLogApi.sendJsonLog(context, Constants.ApiUri, Constants.clashLogBasicUser, Constants.clashLogBasicPass);
+            SendLogApi.sendJsonLog(context, Constants.ApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
         }else{
-            Log.d("Network", "ネットワークに接続されていません");
+            Log.d(Constants.networkString, Constants.nonNetwork);
         }
 
         /* スプラッシュのための中断処理 */

@@ -12,15 +12,15 @@ public class Constants {
          */
     /* クラッシュログAPI */
         /** ローカル環境のURI */
-        public static final String ApiUri = "http://localhost:8000/clashLogApi.php";
+        public static final String ApiUri = "http://localhost:8000/crashLogApi.php";
         /** 本番環境のURI */
         // public static final String ApiUri = "";
 
     /* BASIC認証用 */
         /** クラッシュログ用ユーザー名 */
-        public static final String clashLogBasicUser = "u6Kg5t2c";
+        public static final String crashLogBasicUser = "u6Kg5t2c";
         /** クラッシュログ用パスワード */
-        public static final String clashLogBasicPass = "Zp6uaUzY";
+        public static final String crashLogBasicPass = "Zp6uaUzY";
 
     /* フォーマット */
         /** フォーマットとした日時 */
@@ -41,6 +41,20 @@ public class Constants {
         public static final String slashString = "/";
         /** 楽曲等時間初期値 */
         public static final String initialTime = "00:00";
+        /** ネットワーク */
+        public static final String networkString = "Network";
+        /** 成功タグ */
+        public static final String successTag = "SUCCESS";
+        /** エラータグ */
+        public static final String errorTag = "ERROR";
+        /** インフォメーションタグ */
+        public static final String infoTag = "INFO";
+        /** レスポンス */
+        public static final String responseString = "response";
+        /** コンテンツタイプ */
+        public static final String contentTypeString = "contentType";
+        /** サーバーステータス */
+        public static final String serverStatusString = "serverStatus";
         /** パーミッション許可文 */
         public static final String permissionSentence = "権限が許可されました";
         /** パーミッション非許可文 */
@@ -51,12 +65,18 @@ public class Constants {
         public static final String playErrorSentence = "再生エラー: ";
         /** 楽曲リスト曲数表示テキスト */
         public static final String tunesListSentence = "楽曲リスト:全 %s曲";
+        /** サーバーエラー文 */
+        public static final String severErrorSentence = "サーバー停止などの理由で転送不可";
+        /** ネットワーク未接続文 */
+        public static final String nonNetwork = "ネットワークに接続されていません";
+        /** ログファイルが存在しない場合の文 */
+        public static final String nonLogFile = "ログファイルが存在しません";
 
     /* フォルダ名、ファイル名 */
         /** 音楽保管フォルダ */
         public static final String musicFolder = "/Music/";
         /** ログ保管フォルダ */
-        public static final String logFolder = "log";
+        public static final String crashLogFolder = "log";
         /** ログファイル */
         public static final String logFile = "crash_log.json";
 

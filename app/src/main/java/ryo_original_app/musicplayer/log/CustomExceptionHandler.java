@@ -78,6 +78,7 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
             logJson.put(Constants.modelLogKey, Build.MODEL);
             logJson.put(Constants.osVerLogKey, "Android:" + Build.VERSION.RELEASE);
 
+            /* クラッシュログの可視化（Logcat） */
             Log.e("crashLogJson", logJson.toString(4));
 
             /* ログファイルをローカルに保管するためにフォルダを作成する */
