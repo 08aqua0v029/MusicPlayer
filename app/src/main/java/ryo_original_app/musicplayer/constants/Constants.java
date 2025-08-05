@@ -76,9 +76,9 @@ public class Constants {
         /** 音楽保管フォルダ */
         public static final String musicFolder = "/Music/";
         /** ログ保管フォルダ */
-        public static final String crashLogFolder = "log";
+        public static final String logFolder = "log";
         /** ログファイル */
-        public static final String logFile = "crash_log.json";
+        public static final String crashLogFile = "crash_log.json";
 
     /* クラス名 */
         /** クラス名:MainActivity */
