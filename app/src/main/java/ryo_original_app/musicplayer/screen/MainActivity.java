@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* 各種ボタン定義 */
         _btPlay = findViewById(R.id.btPlay);
-
     }
 
     /**
@@ -272,7 +271,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             /* 再生中の場合は楽曲を念の為止める */
             if (playState == MusicStatus.START.getId()) {
-                mediaPlayer.stop();
+                mediaPlayer.pause();
+                mediaPlayer.seekTo(0);
             }
             mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
             /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
@@ -293,7 +293,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.start);  // ボタン画像を変える
                 nowTune(nowTuneNum);    // 楽曲データ取得
                 tuneSetup();            // 楽曲セットアップ
-                mediaPlayer.stop();     // 楽曲停止
                 playState = MusicStatus.STOP.getId();          // 停止状態にする
             }
         });
@@ -411,6 +410,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             mediaPlayer.setDataSource(nowTuneDir);  // メディアプレイヤーに楽曲データをセット
             mediaPlayer.prepare();                  // 再生準備（同期）
+
+            /* 再生終了時処理 */
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    onNextButton(null); // 次の楽曲へ
+                }
+            });
         } catch (IOException e) {
             Toast.makeText(this, Constants.playErrorSentence + e.getMessage(), Toast.LENGTH_LONG).show();
         }
