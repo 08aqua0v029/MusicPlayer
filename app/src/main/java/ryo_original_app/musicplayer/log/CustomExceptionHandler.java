@@ -54,7 +54,8 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
         Throwable rootCause = getCause(e);
         String errorType = rootCause.getClass().getName();  // エラー内容
         String message = rootCause.getMessage();    // エラー詳細
-        String location = rootCause.getStackTrace().length > 0 ? rootCause.getStackTrace()[0].toString() : "検出できず"; // クラッシュ箇所（getCauseにてクラッシュ箇所が何らかの理由で0だった場合は検出できない旨を三項演算子で表現）
+        // クラッシュ箇所（getCauseにてクラッシュ箇所が何らかの理由で0だった場合は検出できない旨を三項演算子で表現）
+        String location = rootCause.getStackTrace().length > 0 ? rootCause.getStackTrace()[0].toString() : "検出できず";
 
         /* クラッシュ時刻を整形 */
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.formatDateTime);
@@ -79,14 +80,14 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
             logJson.put(Constants.osVerLogKey, "Android:" + Build.VERSION.RELEASE);
 
             /* クラッシュログの可視化（Logcat） */
-            Log.e("crashLogJson", logJson.toString(4));
+            Log.e(Constants.crashLogFile, logJson.toString(4));
 
             /* ログファイルをローカルに保管するためにフォルダを作成する */
             File logDir = new File(context.getFilesDir(), Constants.logFolder);
             if (!logDir.exists()) logDir.mkdirs();
 
             /* ログファイルをローカルに保管する */
-            File crashLog = new File(logDir, Constants.logFile);
+            File crashLog = new File(logDir, Constants.crashLogFile);
             FileOutputStream outputFile = new FileOutputStream(crashLog);
             outputFile.write(logJson.toString().getBytes());
 
