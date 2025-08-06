@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private int totalTunesNum = 0;
         /** 楽曲番号 */
         private int nowTuneNum = 0;
-        /** 計測している時間 */
-        private int nowTime = 0;
+        /** 戻るボタン押下時の時間計測（計算するメソッドがLong型対応なので、それに合わせている） */
+        private long backButtonPressTime  = 0;
 
     /**
      * 再生状態
@@ -249,10 +249,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param v View情報
      */
     public void onBackButton(View v) {
+
+        long pressSystemTime = System.currentTimeMillis();    // 押下した時間計測のためシステムの時間を取り出す
+
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
-            /* TODO:実装後削除 */
-            System.out.println("modoru");
+            MusicTimer musicTimer = new MusicTimer(this);   // タイマーの呼び出し
+
+            /* メディアプレイヤーが起動していないのに戻るボタンを押下したら、処理を通さない */
+            if(mediaPlayer == null){
+                return;
+            }
+
+            /* 再生中の場合は楽曲を念の為止める */
+            if (playState == MusicStatus.START.getId()) {
+                mediaPlayer.pause();
+                mediaPlayer.seekTo(0);
+            }
+
+            /* 1秒以内に2回押下したなら1曲前に戻る */
+            if(pressSystemTime - backButtonPressTime < 1000) {
+                mediaPlayer = new MediaPlayer();    // mediaPayer初期化
+                /* 0番目の楽曲以外の場合1曲前へ戻す */
+                if(nowTuneNum > 0){
+                    nowTuneNum--;   // 1曲前へ
+                }
+                nowTune(nowTuneNum);    // 楽曲データ取得
+                tuneSetup();            // 楽曲セットアップ
+            }
+            _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+            mediaPlayer.start();    // プレイヤースタート
+            musicTimer.startTimer(mediaPlayer);  // タイマー計測
+            playState = MusicStatus.START.getId();          // 再生状態にする
+            backButtonPressTime = pressSystemTime;    // 時刻の更新（押下した際のシステム時間を挿入）
         });
     }
 
@@ -263,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onNextButton(View v) {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
-            MusicTimer musicTimer = new MusicTimer(this);
+            MusicTimer musicTimer = new MusicTimer(this);   // タイマーの呼び出し
             /* 楽曲データの存在チェック */
             if (Objects.isNull(tunesList)) {
                 Toast.makeText(this, Constants.nonMusicDate, Toast.LENGTH_SHORT).show();
@@ -274,7 +303,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mediaPlayer.pause();
                 mediaPlayer.seekTo(0);
             }
+
             mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
+
             /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
             /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
             /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
