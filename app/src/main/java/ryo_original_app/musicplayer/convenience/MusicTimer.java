@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import ryo_original_app.musicplayer.R;
@@ -17,14 +17,17 @@ public class MusicTimer {
 
     /** 1楽曲の今の再生時間 */
     private TextView _tuneNowTime;
+    private SeekBar _seekbar;
     /** UI関連操作（ハンドラ） */
     private Handler handler = new Handler(Looper.getMainLooper());
     /** マルチスレッドのタスク（この場合、時間計測） */
     private Runnable timerTask;
     /** 1楽曲の再生時間 */
     private String tuneTotalTime;
+    double seekPercentage;
     /** 任意の画面のアクティビティ */
     private Activity activity;
+
 
     /**
      * コンストラクタ（初期処理でアクティビティを取得）
@@ -44,12 +47,14 @@ public class MusicTimer {
         if(timerTask != null) {
             handler.removeCallbacks(timerTask);
         }
-
+        int totalTime = mediaPlayer.getDuration();
         /* マルチスレッド開始 */
         timerTask = new Runnable() {
             @Override
             public void run() {
-                _tuneNowTime = activity.findViewById(R.id.tuneNowTime); // UI側の再生時間のidを取得
+                _tuneNowTime = activity.findViewById(R.id.tuneNowTime); // UIの再生時間のidを取得
+                _seekbar = activity.findViewById(R.id.seekbar); // UIのシークバーのidを取得
+
                 /* メディアプレイヤーが起動しており、再生中であれば時間計測 */
                 if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                     int nowTime = mediaPlayer.getCurrentPosition();     // ミリ秒単位で楽曲の時間を取得
@@ -58,7 +63,13 @@ public class MusicTimer {
                     DataShaping shaping = new DataShaping();
                     tuneTotalTime = shaping.timeFormat(String.valueOf(nowTime));
 
-                    _tuneNowTime.setText(tuneTotalTime);         // UI側にセット
+                    /* 再生時間が0秒でなければ、シークバーの計算を行う */
+                    if(mediaPlayer.getCurrentPosition() != 0) {
+                        seekPercentage = ((double) nowTime / totalTime) * 100;
+                    }
+
+                    _tuneNowTime.setText(tuneTotalTime);         // 再生時間をUIにセット
+                    _seekbar.setProgress((int) seekPercentage);  // シークバーの進捗をUIにセット
                     handler.postDelayed(this, 1000); // 1秒ごとに更新
                 }else{
                     handler.removeCallbacks(this);

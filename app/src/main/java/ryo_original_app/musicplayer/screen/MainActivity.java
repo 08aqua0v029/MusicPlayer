@@ -1,6 +1,8 @@
 package ryo_original_app.musicplayer.screen;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -115,6 +117,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
 
+        /* 通知設定 */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String notificationId = "sound_manager_service_notification_channel";   // 通知用のId
+            String notificationName = getString(R.string.app_name);                 // 通知名
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;                // 通知の重要度
+            NotificationChannel channel = new NotificationChannel(notificationId, notificationName, importance);    // 通知チャンネル生成
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);     // NotificationManagerオブジェクト取得
+            manager.createNotificationChannel(channel);                             // 通知チャンネルを設定
+        }
+
         /* 以下メイン画面描画用処理 */
         setTheme(R.style.Base_Theme_MusicPlayer);
         EdgeToEdge.enable(this);
@@ -191,6 +203,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
+     * 通知エリアに再生状況を表示させる
+     */
+    public void showPlayerNotification(boolean playing){
+
+    }
+
+    /**
      * クリック処理
      * ※各ボタンのクリック処理を充てているので、反応しないようにしている
      * @param v View情報
@@ -229,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
+                showPlayerNotification(true);
                 musicTimer.startTimer(mediaPlayer);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else if (playState == MusicStatus.START.getId()) {

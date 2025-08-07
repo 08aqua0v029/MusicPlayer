@@ -161,9 +161,8 @@
     <SeekBar
         android:id="@+id/seekbar"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:progressDrawable="@drawable/seekbar_progress"
-        android:thumbOffset="0dp"
         android:thumbTint="#00bfff"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
