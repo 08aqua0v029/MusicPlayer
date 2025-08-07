@@ -1,6 +1,7 @@
 package ryo_original_app.musicplayer.screen;
 
 import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -28,6 +29,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -35,7 +37,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.Format;
 import java.util.Objects;
 
 import ryo_original_app.musicplayer.Enum.MusicStatus;
@@ -76,6 +77,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private int nowTuneNum = 0;
         /** 戻るボタン押下時の時間計測（計算するメソッドがLong型対応なので、それに合わせている） */
         private long backButtonPressTime  = 0;
+        /** アートファイルデータ */
+        byte[] artFileData;
+        /** 楽曲タイトル */
+        String tuneTitle = "";
+        /** 楽曲アーティスト名 */
+        String tuneArtist = "";
+
+    private NotificationManager manager;
 
     /**
      * 再生状態
@@ -110,9 +119,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.onDestroy();
         }
 
-        /* 権限を得る処理 */
+        /* 権限を得る処理（Android13未満はREAD_EXTERNAL_STORAGEだけでよい） */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, 1);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.READ_MEDIA_AUDIO,   // 音声データパーミッション
+                            Manifest.permission.POST_NOTIFICATIONS  // 通知パーミッション
+                    }, 1);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
@@ -123,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String notificationName = getString(R.string.app_name);                 // 通知名
             int importance = NotificationManager.IMPORTANCE_DEFAULT;                // 通知の重要度
             NotificationChannel channel = new NotificationChannel(notificationId, notificationName, importance);    // 通知チャンネル生成
-            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);     // NotificationManagerオブジェクト取得
+            manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);     // NotificationManagerオブジェクト取得
             manager.createNotificationChannel(channel);                             // 通知チャンネルを設定
         }
 
@@ -205,8 +218,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 通知エリアに再生状況を表示させる
      */
-    public void showPlayerNotification(boolean playing){
-
+    public void showPlayerNotification(){
+        /* 通知関連 */
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "sound_manager_service_notification_channel");   // builderクラス生成
+        builder.setSmallIcon(android.R.drawable.ic_media_play)                     // 通知エリアのアイコン
+                .setContentTitle(tuneTitle)     // 通知エリアのタイトル
+                .setContentText(tuneArtist)     // 通知エリアのテキスト
+                .setLargeIcon(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));  // アルバムアートを通知に出す
+        Notification notification = builder.build();                                // builderからnotificationオブジェクト生成
+        notification.flags = Notification.FLAG_NO_CLEAR;                            // フリックによる通知削除を停止する
+        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); // NotificationManagerオブジェクト取得
+        manager.notify(0, notification);                                         // 通知出す
     }
 
     /**
@@ -248,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
-                showPlayerNotification(true);
+                showPlayerNotification();   // 通知の表示
                 musicTimer.startTimer(mediaPlayer);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else if (playState == MusicStatus.START.getId()) {
@@ -421,7 +443,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* メタデータ取り出し */
         try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
             tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
-            String tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
+            tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
+            tuneArtist = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);       // アーティスト名
             String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）
 
             /* 楽曲時間（ミリ秒）の変換作業 */
@@ -436,9 +459,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             _tuneTotalTime.setText(tuneTotalTime);
 
             /* アートファイルの導入 */
-            byte[] data = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
-            if (null != data) { // データが無ければnullにする
-                _artFile.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));   // 画像データの代入
+            artFileData = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
+            if (null != artFileData) { // データが無ければnullにする
+                _artFile.setImageBitmap(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));   // 画像データの代入
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
