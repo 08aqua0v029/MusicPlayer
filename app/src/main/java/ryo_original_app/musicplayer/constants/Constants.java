@@ -1,5 +1,7 @@
 package ryo_original_app.musicplayer.constants;
 
+import ryo_original_app.musicplayer.BuildConfig;
+
 /**
  * 定数クラス
  */
@@ -11,12 +13,10 @@ public class Constants {
         // public static final String ApiUri = "";
 
     /* BASIC認証用 */
-    /* TODO:一定の機能実装後、ユーザー、パスワードの管理方法を検討し直す */
-    /* TODO:.env ファイルでの保管で、gitには公開させない  */
         /** クラッシュログ用ユーザー名 */
-        public static final String crashLogBasicUser = "u6Kg5t2c";
+        public static final String crashLogBasicUser = BuildConfig.BASIC_USER;
         /** クラッシュログ用パスワード */
-        public static final String crashLogBasicPass = "Zp6uaUzY";
+        public static final String crashLogBasicPass = BuildConfig.BASIC_PASS;
 
     /* フォーマット */
         /** フォーマットとした日時 */
