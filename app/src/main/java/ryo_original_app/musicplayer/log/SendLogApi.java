@@ -15,7 +15,11 @@ import ryo_original_app.musicplayer.constants.Constants;
 public class SendLogApi {
     /**
      * JSONログをサーバーへ送信
+     * 汎用ログ送信クラス
      * @param context アプリの情報
+     * @param apiUri ログの送信先
+     * @param basicUser Basic認証User名
+     * @param basicPass Basic認証Pass
      */
     public static void sendJsonLog(Context context, String apiUri, String basicUser, String basicPass) {
         /* ファイルの準備 */
@@ -38,6 +42,7 @@ public class SendLogApi {
                     connection.setDoOutput(true);   // 送信の許可
 
                     /* Basic認証設定 */
+                    /* TODO:一定の機能実装後、Tokenや署名などの認証方法も試してみる */
                     final String userPass = basicUser + ":" + basicPass;    // ユーザー:パス形式の設定
                     String encodeAuthorization = Base64.getEncoder().encodeToString(userPass.getBytes());   // ユーザー:パスをBASE64形式に変換
                     connection.setRequestProperty("Authorization", "Basic " + encodeAuthorization);     // Basic認証設定をヘッダにセット

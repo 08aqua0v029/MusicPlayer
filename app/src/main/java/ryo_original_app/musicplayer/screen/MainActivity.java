@@ -132,12 +132,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* 通知設定 */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String notificationId = "sound_manager_service_notification_channel";   // 通知用のId
-            String notificationName = getString(R.string.app_name);                 // 通知名
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;                // 通知の重要度
+            String notificationId = Constants.notificationId;          // 通知用のId
+            String notificationName = getString(R.string.app_name);    // 通知名
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;   // 通知の重要度
             NotificationChannel channel = new NotificationChannel(notificationId, notificationName, importance);    // 通知チャンネル生成
-            manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);     // NotificationManagerオブジェクト取得
-            manager.createNotificationChannel(channel);                             // 通知チャンネルを設定
+            manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); // NotificationManagerオブジェクト取得
+            manager.createNotificationChannel(channel);                // 通知チャンネルを設定
         }
 
         /* 以下メイン画面描画用処理 */
@@ -217,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 通知エリアに再生状況を表示させる
+     * TODO:現状簡易的な通知。状況に応じて凝ったものに調整
      */
     public void showPlayerNotification(){
         /* 通知関連 */
@@ -320,10 +321,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tuneSetup();            // 楽曲セットアップ
             }
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
-            mediaPlayer.start();    // プレイヤースタート
-            musicTimer.startTimer(mediaPlayer);  // タイマー計測
-            playState = MusicStatus.START.getId();          // 再生状態にする
-            backButtonPressTime = pressSystemTime;    // 時刻の更新（押下した際のシステム時間を挿入）
+            mediaPlayer.start();                        // プレイヤースタート
+            musicTimer.startTimer(mediaPlayer);         // タイマー計測
+            playState = MusicStatus.START.getId();      // 再生状態にする
+            backButtonPressTime = pressSystemTime;      // 時刻の更新（押下した際のシステム時間を挿入）
         });
     }
 
@@ -349,8 +350,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
 
             /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
-            /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
-            /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
+            /* 楽曲番号が0スタートのため、総楽曲数を -1 しないと整合性がとれない */
+            /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！検証用に使う */
             //if (totalTunesNum > nowTuneNum) {
             if (totalTunesNum -1 > nowTuneNum) {
                 nowTuneNum++;

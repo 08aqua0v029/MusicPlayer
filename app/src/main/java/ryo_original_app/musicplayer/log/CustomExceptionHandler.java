@@ -28,7 +28,7 @@ import ryo_original_app.musicplayer.constants.Constants;
 
 /**
  * クラッシュ時のカスタムハンドラ
- * ログ出力を行う
+ * ログ出力を行う（一時的にローカルに保存。別処理で再起動後API経由でDB保管）
  */
 public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
 

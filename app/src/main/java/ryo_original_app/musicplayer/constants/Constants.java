@@ -4,12 +4,6 @@ package ryo_original_app.musicplayer.constants;
  * 定数クラス
  */
 public class Constants {
-    /* URI関連 */
-        /*
-         * adb -s ZY22GXG7JX reverse tcp:8000 tcp:8000
-         * でAndroid実機でもローカルアクセスが簡単にできる
-         * ZY22GXG7JXは端末シリアル名
-         */
     /* クラッシュログAPI */
         /** ローカル環境のURI */
         public static final String ApiUri = "http://localhost:8000/crashLogApi.php";
@@ -17,6 +11,8 @@ public class Constants {
         // public static final String ApiUri = "";
 
     /* BASIC認証用 */
+    /* TODO:一定の機能実装後、ユーザー、パスワードの管理方法を検討し直す */
+    /* TODO:.env ファイルでの保管で、gitには公開させない  */
         /** クラッシュログ用ユーザー名 */
         public static final String crashLogBasicUser = "u6Kg5t2c";
         /** クラッシュログ用パスワード */
@@ -86,6 +82,9 @@ public class Constants {
         /** クラス名:TunesList */
         public static final String tunesListClass = "TunesList";
 
+    /* IDなどの通称 */
+        public static final String notificationId = "sound_notification_id";
+
     /* ログ関連 */
         /** クラッシュハンドラ */
         public static final String crashHandler = "crashHandler";
@@ -101,7 +100,4 @@ public class Constants {
         public static final String modelLogKey = "buildModel";
         /** OSバージョンログ用キー */
         public static final String osVerLogKey = "buildOsVersion";
-
-    /* レスポンスコード */
-        // public static final int response200 = 200;
 }
