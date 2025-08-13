@@ -221,13 +221,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void showPlayerNotification(){
         /* 通知関連 */
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "sound_manager_service_notification_channel");   // builderクラス生成
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Constants.notificationId);   // builderクラス生成
         builder.setSmallIcon(android.R.drawable.ic_media_play)                     // 通知エリアのアイコン
                 .setContentTitle(tuneTitle)     // 通知エリアのタイトル
                 .setContentText(tuneArtist)     // 通知エリアのテキスト
                 .setLargeIcon(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));  // アルバムアートを通知に出す
         Notification notification = builder.build();                                // builderからnotificationオブジェクト生成
-        notification.flags = Notification.FLAG_NO_CLEAR;                            // フリックによる通知削除を停止する
         manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); // NotificationManagerオブジェクト取得
         manager.notify(0, notification);                                         // 通知出す
     }
