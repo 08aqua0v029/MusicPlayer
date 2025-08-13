@@ -1,5 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
+    // Make sure that you have the Google services Gradle plugin
+    id 'com.google.gms.google-services'
+    // Add the Crashlytics Gradle plugin
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -29,7 +33,7 @@ android {
 }
 
 dependencies {
-
+    implementation libs.core.splashscreen
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
@@ -37,4 +41,15 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    // Import the Firebase BoM
+    implementation platform(libs.firebase.bom)
+
+    // Add the dependencies for the Crashlytics NDK and Analytics libraries
+    implementation(libs.firebase.crashlytics.ndk)
+    implementation libs.firebase.analytics
+
+
+    // Add the dependencies for any other desired Firebase products
+    // https://firebase.google.com/docs/android/setup#available-libraries
+
 }

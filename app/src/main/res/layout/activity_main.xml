@@ -5,15 +5,142 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@color/white"
+    android:textColor="@color/black"
+    tools:context=".screen.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <ImageButton
+        android:id="@+id/btSubMenu"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@color/white"
+        android:enabled="false"
+        android:scaleType="fitCenter"
+        android:src="@drawable/sub_menu"
+        android:onClick="onSubMenu"
+        tools:ignore="MissingConstraints"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.05"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.02"/>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.197">
+
+        <ImageView
+            android:id="@+id/artFile"
+            android:layout_width="300dp"
+            android:layout_height="300dp">
+
+        </ImageView>
+        <TextView
+            android:id="@+id/tuneTitle"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textColor="#000"
+            android:text="楽曲タイトル" >
+        </TextView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp">
+
+        <TextView
+            android:id="@+id/tuneNowTime"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="00:00"
+            android:textColor="#000"
+            android:textSize="20sp">
+
+        </TextView>
+
+        <TextView
+            android:layout_width="20dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="/"
+            android:textColor="#000"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/tuneTotalTime"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="00:00"
+            android:textColor="#000"
+            android:textSize="20sp">
+
+        </TextView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.725"
+        tools:ignore="MissingConstraints">
+
+        <ImageButton
+            android:id="@+id/btBack"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="30dp"
+            android:background="@color/white"
+            android:enabled="false"
+            android:onClick="onBackButton"
+            android:scaleType="fitCenter"
+            android:src="@drawable/back" />
+
+        <ImageButton
+            android:id="@+id/btPlay"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="30dp"
+            android:background="@color/white"
+            android:enabled="false"
+            android:onClick="onPlayButton"
+            android:scaleType="fitCenter"
+            android:src="@drawable/start" />
+
+        <ImageButton
+            android:id="@+id/btNext"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@color/white"
+            android:enabled="false"
+            android:onClick="onNextButton"
+            android:scaleType="fitCenter"
+            android:src="@drawable/next" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
