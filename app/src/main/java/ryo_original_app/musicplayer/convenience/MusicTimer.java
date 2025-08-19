@@ -79,4 +79,14 @@ public class MusicTimer {
         };
         handler.post(timerTask);
     }
+
+    /**
+     * アプリDestroy時、バグを防ぐため、タイマーを止める処理
+     */
+    public void stopTimer() {
+        if (timerTask != null) {
+            handler.removeCallbacks(timerTask);
+            timerTask = null;
+        }
+    }
 }

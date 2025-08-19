@@ -54,6 +54,7 @@ import ryo_original_app.musicplayer.service.MediaPlaybackService;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Context context;
+    private MusicTimer musicTimer;
 
     /* UI関係 */
         /** 再生・停止ボタン */
@@ -192,6 +193,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
+     * アプリ終了処理
+     */
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+
+        musicTimer.stopTimer();
+
+        /* メディアプレイヤーが起動している場合release（オブジェクトの開放）と初期化 */
+        /* 端末によって、アプリのタスクキルをしても音楽が再生されっぱなしになる */
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    /**
      * requestPermissionsのコールバック（音楽ファイルパーミッション取得）
      * @param requestCode 未使用
      * @param permissions 未使用
@@ -285,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onPlayButton(View v) {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
-            MusicTimer musicTimer = new MusicTimer(this);
+            musicTimer = new MusicTimer(this);
             /*
              * 再生停止処理　以下状態
              * 0:停止　1:再生　2:一時停止
@@ -319,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
-            MusicTimer musicTimer = new MusicTimer(this);   // タイマーの呼び出し
+            musicTimer = new MusicTimer(this);   // タイマーの呼び出し
 
             /* メディアプレイヤーが起動していないのに戻るボタンを押下したら、処理を通さない */
             if(mediaPlayer == null){
@@ -357,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onNextButton(View v) {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
-            MusicTimer musicTimer = new MusicTimer(this);   // タイマーの呼び出し
+            musicTimer = new MusicTimer(this);   // タイマーの呼び出し
             /* 楽曲データの存在チェック */
             if (Objects.isNull(tunesList)) {
                 Toast.makeText(this, Constants.nonMusicDate, Toast.LENGTH_SHORT).show();
