@@ -17,6 +17,9 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -59,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private ImageView _artFile;
         /** 楽曲タイトル */
         private TextView _tuneTitle;
+        /** 楽曲アーティスト名 */
+        private TextView _tuneArtist;
         /** 1楽曲の総時間 */
         private TextView _tuneTotalTime;
 
@@ -98,6 +103,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         this.context = getApplicationContext();
 
+        /* 以下メイン画面描画用処理 */
+        setTheme(R.style.Base_Theme_MusicPlayer);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // フルスクリーンに設定
+            getWindow().setDecorFitsSystemWindows(false);
+            WindowInsetsController insetsController = getWindow().getInsetsController();
+            if (insetsController != null) {
+                insetsController.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                insetsController.setSystemBarsBehavior(
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                );
+            }
+        } else {
+            // 旧API向け
+            getWindow().setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+            );
+        }
+
+        // アクションバーがある場合は非表示
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
         Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(context));
 
@@ -129,11 +162,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* 通知サービス（Foreground Service）の起動 */
         Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
         startForegroundService(serviceIntent);  // Android 8以上必須
-
-        /* 以下メイン画面描画用処理 */
-        setTheme(R.style.Base_Theme_MusicPlayer);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
 
         /* ステータスバー削除処理 */
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -434,6 +462,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* 楽曲UI各種定義 */
         _tuneTitle = findViewById(R.id.tuneTitle);
         _tuneTotalTime = findViewById(R.id.tuneTotalTime);
+        _tuneArtist = findViewById(R.id.tuneArtist);
 
         /* メタデータ取り出し */
         try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
@@ -451,6 +480,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             /* UI側にテキストを代入 */
             _tuneTitle.setText(tuneTitle);
+            _tuneArtist.setText(tuneArtist);
             _tuneTotalTime.setText(tuneTotalTime);
 
             /* アートファイルの導入 */

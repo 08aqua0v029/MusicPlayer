@@ -41,26 +41,44 @@
 
         <ImageView
             android:id="@+id/artFile"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="300dp">
 
         </ImageView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
         <TextView
             android:id="@+id/tuneTitle"
-            android:layout_height="match_parent"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:gravity="center"
-            android:textSize="20sp"
+            android:text="楽曲タイトル"
             android:textColor="#000"
-            android:text="楽曲タイトル" >
-        </TextView>
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/tuneArtist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="楽曲アーティスト"
+            android:textColor="#000"
+            android:textSize="20sp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="128dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
@@ -98,18 +116,16 @@
         </TextView>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/linearLayout4"
+    <SeekBar
+        android:id="@+id/seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintVertical_bias="0.209"
         tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp">
-
-    </LinearLayout>
+        tools:layout_editor_absoluteX="0dp"
+        style="@style/CustomSeekBar"/>
 
     <LinearLayout
         android:id="@+id/linearLayout3"
@@ -122,7 +138,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.729"
+        app:layout_constraintVertical_bias="0.849"
         tools:ignore="MissingConstraints">
 
         <ImageButton
@@ -158,14 +174,17 @@
             android:src="@drawable/next" />
     </LinearLayout>
 
-    <SeekBar
-        android:id="@+id/seekbar"
+    <LinearLayout
+        android:id="@+id/linearLayout4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:progressDrawable="@drawable/seekbar_progress"
-        android:thumbTint="#00bfff"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintVertical_bias="0.0"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp">
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

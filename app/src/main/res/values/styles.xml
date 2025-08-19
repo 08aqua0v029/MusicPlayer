@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- ステータスバーを消す -->
+        <!-- ステータスバー消去 -->
         <item name="android:windowFullscreen">true</item>
-        <!-- タイトルバーも消す -->
+        <!-- タイトルバー消去 -->
         <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="CustomSeekBar" parent="Widget.AppCompat.SeekBar">
+        <!-- プログレス色 -->
+        <item name="android:progressTint">#000</item>
+        <!-- バックグラウンド色 -->
+        <item name="android:progressBackgroundTint">#000</item>
+        <!-- セカンダリープログレス（バッファ用） -->
+        <item name="android:secondaryProgressTint">#FFFFFF</item>
+        <!-- つまみ色 -->
+        <item name="android:thumbTint">#00BFFF</item>
     </style>
 </resources>
