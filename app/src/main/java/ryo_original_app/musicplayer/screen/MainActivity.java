@@ -1,9 +1,6 @@
 package ryo_original_app.musicplayer.screen;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,13 +26,13 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -46,6 +43,7 @@ import ryo_original_app.musicplayer.convenience.MusicTimer;
 import ryo_original_app.musicplayer.log.CustomExceptionHandler;
 import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.log.SendLogApi;
+import ryo_original_app.musicplayer.service.MediaPlaybackService;
 
 /**
  * メインクラス
@@ -83,8 +81,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String tuneTitle = "";
         /** 楽曲アーティスト名 */
         String tuneArtist = "";
-
-    private NotificationManager manager;
 
     /**
      * 再生状態
@@ -130,15 +126,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
 
-        /* 通知設定 */
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String notificationId = Constants.notificationId;          // 通知用のId
-            String notificationName = getString(R.string.app_name);    // 通知名
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;   // 通知の重要度
-            NotificationChannel channel = new NotificationChannel(notificationId, notificationName, importance);    // 通知チャンネル生成
-            manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); // NotificationManagerオブジェクト取得
-            manager.createNotificationChannel(channel);                // 通知チャンネルを設定
-        }
+        /* 通知サービス（Foreground Service）の起動 */
+        Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+        startForegroundService(serviceIntent);  // Android 8以上必須
 
         /* 以下メイン画面描画用処理 */
         setTheme(R.style.Base_Theme_MusicPlayer);
@@ -216,19 +206,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 通知エリアに再生状況を表示させる
-     * TODO:現状簡易的な通知。状況に応じて凝ったものに調整
+     * 通知情報の更新
      */
-    public void showPlayerNotification(){
-        /* 通知関連 */
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Constants.notificationId);   // builderクラス生成
-        builder.setSmallIcon(android.R.drawable.ic_media_play)                     // 通知エリアのアイコン
-                .setContentTitle(tuneTitle)     // 通知エリアのタイトル
-                .setContentText(tuneArtist)     // 通知エリアのテキスト
-                .setLargeIcon(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));  // アルバムアートを通知に出す
-        Notification notification = builder.build();                                // builderからnotificationオブジェクト生成
-        manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); // NotificationManagerオブジェクト取得
-        manager.notify(0, notification);                                         // 通知出す
+    private void updateNotification() {
+        /* アートファイルを一時保存して、通知サービスに渡せるようにしている */
+        File cacheArt = new File(getCacheDir(), "current_art.jpg");
+        try (FileOutputStream fos = new FileOutputStream(cacheArt)) {
+            fos.write(artFileData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        /* サービス側に情報を提供 */
+        Intent intent = new Intent(this, MediaPlaybackService.class);
+        intent.putExtra("title", tuneTitle);
+        intent.putExtra("artist", tuneArtist);
+        intent.putExtra("artPath", cacheArt.getAbsolutePath());
+
+        /* サービスの開始 */
+        startService(intent);
     }
 
     /**
@@ -270,7 +266,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
-                showPlayerNotification();   // 通知の表示
                 musicTimer.startTimer(mediaPlayer);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else if (playState == MusicStatus.START.getId()) {
@@ -463,6 +458,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (null != artFileData) { // データが無ければnullにする
                 _artFile.setImageBitmap(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));   // 画像データの代入
             }
+
+            updateNotification();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
