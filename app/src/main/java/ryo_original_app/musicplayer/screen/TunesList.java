@@ -42,7 +42,6 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
         ArrayAdapter adapter = new ArrayAdapter(TunesList.this,android.R.layout.simple_list_item_1,list);
         setTunesList.setAdapter(adapter);
         setTotalTunesNum.setText(String.format(Constants.tunesListSentence,tunesList.length));
-
     }
 
     /**
