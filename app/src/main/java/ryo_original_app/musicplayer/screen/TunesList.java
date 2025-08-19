@@ -13,7 +13,6 @@ import java.util.List;
 
 import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.constants.Constants;
-import ryo_original_app.musicplayer.log.ScreenTracker;
 
 /**
  * 楽曲リスト表示画面
@@ -28,7 +27,6 @@ public class TunesList extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         /* 楽曲リスト画面遷移 */
         super.onCreate(savedInstanceState);
-        ScreenTracker.setCurrentScreen(Constants.tunesListClass); // 今の画面名を保存している
         setContentView(R.layout.tunes_list);
 
         // 前画面から楽曲リストを取得

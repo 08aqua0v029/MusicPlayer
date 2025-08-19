@@ -10,8 +10,6 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,15 +32,18 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
 import ryo_original_app.musicplayer.Enum.MusicStatus;
 import ryo_original_app.musicplayer.constants.Constants;
+import ryo_original_app.musicplayer.convenience.DataShaping;
+import ryo_original_app.musicplayer.convenience.MusicTimer;
 import ryo_original_app.musicplayer.log.CustomExceptionHandler;
 import ryo_original_app.musicplayer.R;
-import ryo_original_app.musicplayer.log.ScreenTracker;
 import ryo_original_app.musicplayer.log.SendLogApi;
+import ryo_original_app.musicplayer.service.MediaPlaybackService;
 
 /**
  * メインクラス
@@ -50,32 +51,36 @@ import ryo_original_app.musicplayer.log.SendLogApi;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Context context;
-    private ConnectivityManager connectivityManager;
-    private ConnectivityManager.NetworkCallback networkCallback;
 
     /* UI関係 */
-    /** 再生・停止ボタン */
-    private ImageButton _btPlay;
-    /** ジャケットファイル */
-    private ImageView _artFile;
-    /** 楽曲タイトル */
-    private TextView _tuneTitle;
-    /** 1楽曲の総時間 */
-    private TextView _tuneTotalTime;
-    /** 1楽曲の今の再生時間 */
-    private TextView _tuneNowTime;
+        /** 再生・停止ボタン */
+        private ImageButton _btPlay;
+        /** ジャケットファイル */
+        private ImageView _artFile;
+        /** 楽曲タイトル */
+        private TextView _tuneTitle;
+        /** 1楽曲の総時間 */
+        private TextView _tuneTotalTime;
 
     /* 音楽ファイル関係 */
-    /** メディアプレイヤーインスタンス */
-    private MediaPlayer mediaPlayer;
-    /** 楽曲ディレクトリ */
-    private File fileDir;
-    /** 楽曲一覧 */
-    private File[] tunesList;
-    /** 総楽曲数 */
-    private int totalTunesNum = 0;
-    /** 楽曲番号 */
-    private int nowTuneNum = 0;
+        /** メディアプレイヤーインスタンス */
+        private MediaPlayer mediaPlayer;
+        /** 楽曲ディレクトリ */
+        private File fileDir;
+        /** 楽曲一覧 */
+        private File[] tunesList;
+        /** 総楽曲数 */
+        private int totalTunesNum = 0;
+        /** 楽曲番号 */
+        private int nowTuneNum = 0;
+        /** 戻るボタン押下時の時間計測（計算するメソッドがLong型対応なので、それに合わせている） */
+        private long backButtonPressTime  = 0;
+        /** アートファイルデータ */
+        byte[] artFileData;
+        /** 楽曲タイトル */
+        String tuneTitle = "";
+        /** 楽曲アーティスト名 */
+        String tuneArtist = "";
 
     /**
      * 再生状態
@@ -92,16 +97,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onCreate(savedInstanceState);
         this.context = getApplicationContext();
-        ScreenTracker.setCurrentScreen(Constants.mainActivityClass); // 今の画面名を保存している
 
         /* カスタムクラッシュハンドラを設定（全画面対応のためここのみ記載で良い） */
         Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(context));
 
         /* ネットワーク接続状態なら、クラッシュJSONログのサーバー保存を行う */
         if(networkConnect()) {
-            SendLogApi.sendJsonLog(context, Constants.ApiUri, Constants.clashLogBasicUser, Constants.clashLogBasicPass);
+            SendLogApi.sendJsonLog(context, Constants.ApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
         }else{
-            Log.d("Network", "ネットワークに接続されていません");
+            Log.d(Constants.networkString, Constants.nonNetwork);
         }
 
         /* スプラッシュのための中断処理 */
@@ -111,12 +115,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.onDestroy();
         }
 
-        /* 権限を得る処理 */
+        /* 権限を得る処理（Android13未満はREAD_EXTERNAL_STORAGEだけでよい） */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, 1);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.READ_MEDIA_AUDIO,   // 音声データパーミッション
+                            Manifest.permission.POST_NOTIFICATIONS  // 通知パーミッション
+                    }, 1);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
+
+        /* 通知サービス（Foreground Service）の起動 */
+        Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+        startForegroundService(serviceIntent);  // Android 8以上必須
 
         /* 以下メイン画面描画用処理 */
         setTheme(R.style.Base_Theme_MusicPlayer);
@@ -136,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* 各種ボタン定義 */
         _btPlay = findViewById(R.id.btPlay);
-
     }
 
     /**
@@ -195,6 +206,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
+     * 通知情報の更新
+     */
+    private void updateNotification() {
+        /* アートファイルを一時保存して、通知サービスに渡せるようにしている */
+        File cacheArt = new File(getCacheDir(), "current_art.jpg");
+        try (FileOutputStream fos = new FileOutputStream(cacheArt)) {
+            fos.write(artFileData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        /* サービス側に情報を提供 */
+        Intent intent = new Intent(this, MediaPlaybackService.class);
+        intent.putExtra("title", tuneTitle);
+        intent.putExtra("artist", tuneArtist);
+        intent.putExtra("artPath", cacheArt.getAbsolutePath());
+
+        /* サービスの開始 */
+        startService(intent);
+    }
+
+    /**
      * クリック処理
      * ※各ボタンのクリック処理を充てているので、反応しないようにしている
      * @param v View情報
@@ -224,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onPlayButton(View v) {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
+            MusicTimer musicTimer = new MusicTimer(this);
             /*
              * 再生停止処理　以下状態
              * 0:停止　1:再生　2:一時停止
@@ -232,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
+                musicTimer.startTimer(mediaPlayer);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else if (playState == MusicStatus.START.getId()) {
                 _btPlay.setImageResource(R.drawable.start); // ボタン画像を変える
@@ -240,6 +275,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else if (playState == MusicStatus.PAUSE.getId()) {
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 mediaPlayer.start();    // 楽曲セットアップをせずに、一時停止したところから再生
+                musicTimer.startTimer(mediaPlayer);     // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             }
         });
@@ -250,10 +286,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param v View情報
      */
     public void onBackButton(View v) {
+
+        long pressSystemTime = System.currentTimeMillis();    // 押下した時間計測のためシステムの時間を取り出す
+
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
-            /* TODO:実装後削除 */
-            System.out.println("modoru");
+            MusicTimer musicTimer = new MusicTimer(this);   // タイマーの呼び出し
+
+            /* メディアプレイヤーが起動していないのに戻るボタンを押下したら、処理を通さない */
+            if(mediaPlayer == null){
+                return;
+            }
+
+            /* 再生中の場合は楽曲を念の為止める */
+            if (playState == MusicStatus.START.getId()) {
+                mediaPlayer.pause();
+                mediaPlayer.seekTo(0);
+            }
+
+            /* 1秒以内に2回押下したなら1曲前に戻る */
+            if(pressSystemTime - backButtonPressTime < 1000) {
+                mediaPlayer = new MediaPlayer();    // mediaPayer初期化
+                /* 0番目の楽曲以外の場合1曲前へ戻す */
+                if(nowTuneNum > 0){
+                    nowTuneNum--;   // 1曲前へ
+                }
+                nowTune(nowTuneNum);    // 楽曲データ取得
+                tuneSetup();            // 楽曲セットアップ
+            }
+            _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+            mediaPlayer.start();                        // プレイヤースタート
+            musicTimer.startTimer(mediaPlayer);         // タイマー計測
+            playState = MusicStatus.START.getId();      // 再生状態にする
+            backButtonPressTime = pressSystemTime;      // 時刻の更新（押下した際のシステム時間を挿入）
         });
     }
 
@@ -264,6 +329,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onNextButton(View v) {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
+            MusicTimer musicTimer = new MusicTimer(this);   // タイマーの呼び出し
             /* 楽曲データの存在チェック */
             if (Objects.isNull(tunesList)) {
                 Toast.makeText(this, Constants.nonMusicDate, Toast.LENGTH_SHORT).show();
@@ -271,12 +337,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             /* 再生中の場合は楽曲を念の為止める */
             if (playState == MusicStatus.START.getId()) {
-                mediaPlayer.stop();
+                mediaPlayer.pause();
+                mediaPlayer.seekTo(0);
             }
 
+            mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
+
             /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
-            /* 楽曲番号が０スタートのため、総楽曲数を -1 しないと整合性がとれない */
-            /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！ */
+            /* 楽曲番号が0スタートのため、総楽曲数を -1 しないと整合性がとれない */
+            /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！検証用に使う */
             //if (totalTunesNum > nowTuneNum) {
             if (totalTunesNum -1 > nowTuneNum) {
                 nowTuneNum++;
@@ -284,6 +353,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 nowTune(nowTuneNum);    // 楽曲データ取得
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
+                musicTimer.startTimer(mediaPlayer);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else {
                 /* TODO: リピート機能未実装のため、総楽曲一周したら一度停止処理をかます */
@@ -291,7 +361,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.start);  // ボタン画像を変える
                 nowTune(nowTuneNum);    // 楽曲データ取得
                 tuneSetup();            // 楽曲セットアップ
-                mediaPlayer.stop();     // 楽曲停止
                 playState = MusicStatus.STOP.getId();          // 停止状態にする
             }
         });
@@ -365,20 +434,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* 楽曲UI各種定義 */
         _tuneTitle = findViewById(R.id.tuneTitle);
         _tuneTotalTime = findViewById(R.id.tuneTotalTime);
-        _tuneNowTime = findViewById(R.id.tuneNowTime);
 
         /* メタデータ取り出し */
         try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
             tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
-            String tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
+            tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
+            tuneArtist = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);       // アーティスト名
             String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）
 
             /* 楽曲時間（ミリ秒）の変換作業 */
             if(tuneTotalTime != null) {
-                int secTmp = Integer.parseInt(tuneTotalTime) / 1000;    // ミリ秒を秒に
-                int tuneTotalTimeMin = (secTmp % 3600) / 60;            // 秒を分化し分のみを抽出
-                int tuneTotalTimeSec = secTmp % 60;                     // 秒を60で割った余りが分を除いた秒になる
-                tuneTotalTime = (tuneTotalTimeMin + Constants.colonString + tuneTotalTimeSec);    // 時間を整形
+                DataShaping shaping = new DataShaping();
+                tuneTotalTime = shaping.timeFormat(tuneTotalTime);
             } else {
                 tuneTotalTime = Constants.initialTime;
             }
@@ -387,10 +454,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             _tuneTotalTime.setText(tuneTotalTime);
 
             /* アートファイルの導入 */
-            byte[] data = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
-            if (null != data) { // データが無ければnullにする
-                _artFile.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));   // 画像データの代入
+            artFileData = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
+            if (null != artFileData) { // データが無ければnullにする
+                _artFile.setImageBitmap(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));   // 画像データの代入
             }
+
+            updateNotification();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -412,6 +482,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             mediaPlayer.setDataSource(nowTuneDir);  // メディアプレイヤーに楽曲データをセット
             mediaPlayer.prepare();                  // 再生準備（同期）
+
+            /* 再生終了時処理 */
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    onNextButton(null); // 次の楽曲へ
+                }
+            });
         } catch (IOException e) {
             Toast.makeText(this, Constants.playErrorSentence + e.getMessage(), Toast.LENGTH_LONG).show();
         }

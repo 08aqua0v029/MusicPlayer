@@ -15,11 +15,15 @@ import ryo_original_app.musicplayer.constants.Constants;
 public class SendLogApi {
     /**
      * JSONログをサーバーへ送信
+     * 汎用ログ送信クラス
      * @param context アプリの情報
+     * @param apiUri ログの送信先
+     * @param basicUser Basic認証User名
+     * @param basicPass Basic認証Pass
      */
     public static void sendJsonLog(Context context, String apiUri, String basicUser, String basicPass) {
         /* ファイルの準備 */
-        File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.logFile);
+        File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.crashLogFile);
 
         /* JSONファイルの存在有無チェック */
         if (inputFile.exists()){
@@ -38,6 +42,7 @@ public class SendLogApi {
                     connection.setDoOutput(true);   // 送信の許可
 
                     /* Basic認証設定 */
+                    /* TODO:一定の機能実装後、Tokenや署名などの認証方法も試してみる */
                     final String userPass = basicUser + ":" + basicPass;    // ユーザー:パス形式の設定
                     String encodeAuthorization = Base64.getEncoder().encodeToString(userPass.getBytes());   // ユーザー:パスをBASE64形式に変換
                     connection.setRequestProperty("Authorization", "Basic " + encodeAuthorization);     // Basic認証設定をヘッダにセット
@@ -55,20 +60,26 @@ public class SendLogApi {
                     /* レスポンスが200番台だったら成功とし、ファイルを削除 */
                     if (responseCode >= 200 && responseCode < 300) {
                         inputFile.delete();  // 削除
-                        Log.d("SUCCESS", "response:" + String.valueOf(responseCode));
-                        Log.d("SUCCESS", "contentType:" + contentType);
-                        Log.d("SUCCESS", "serverStatus:" + serverStatus);
+                        Log.d(Constants.successTag,
+                                Constants.responseString + Constants.colonString + String.valueOf(responseCode));
+                        Log.d(Constants.successTag,
+                                Constants.contentTypeString + Constants.colonString + contentType);
+                        Log.d(Constants.successTag,
+                                Constants.serverStatusString + Constants.colonString + serverStatus);
                     } else {
-                        Log.e("ERROR", "response:" + String.valueOf(responseCode));
-                        Log.e("ERROR", "contentType:" + contentType);
-                        Log.e("ERROR", "serverStatus:" + serverStatus);
+                        Log.e(Constants.errorTag,
+                                Constants.responseString + Constants.colonString + String.valueOf(responseCode));
+                        Log.e(Constants.errorTag,
+                                Constants.contentTypeString + Constants.colonString + contentType);
+                        Log.e(Constants.errorTag,
+                                Constants.serverStatusString + Constants.colonString + serverStatus);
                     }
                 } catch (Exception e) {
-                    Log.e("ERROR", "サーバー停止などの理由で転送不可", e);
+                    Log.e(Constants.errorTag, Constants.severErrorSentence, e);
                 }
             }).start();
         }else{
-            Log.d("info", "ログファイルが存在しません");
+            Log.d(Constants.infoTag, Constants.nonLogFile);
         }
     }
 }

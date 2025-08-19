@@ -28,7 +28,7 @@ import ryo_original_app.musicplayer.constants.Constants;
 
 /**
  * クラッシュ時のカスタムハンドラ
- * ログ出力を行う
+ * ログ出力を行う（一時的にローカルに保存。別処理で再起動後API経由でDB保管）
  */
 public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
 
@@ -48,13 +48,13 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
      */
     @Override
     public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-        String currentScreen = ScreenTracker.getCurrentScreen();    // クラッシュ前に保存された画面名を取得
 
         // エラー詳細抽出
         Throwable rootCause = getCause(e);
         String errorType = rootCause.getClass().getName();  // エラー内容
         String message = rootCause.getMessage();    // エラー詳細
-        String location = rootCause.getStackTrace().length > 0 ? rootCause.getStackTrace()[0].toString() : "検出できず"; // クラッシュ箇所（getCauseにてクラッシュ箇所が何らかの理由で0だった場合は検出できない旨を三項演算子で表現）
+        // クラッシュ箇所（getCauseにてクラッシュ箇所が何らかの理由で0だった場合は検出できない旨を三項演算子で表現）
+        String location = rootCause.getStackTrace().length > 0 ? rootCause.getStackTrace()[0].toString() : "検出できず";
 
         /* クラッシュ時刻を整形 */
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.formatDateTime);
@@ -78,14 +78,15 @@ public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
             logJson.put(Constants.modelLogKey, Build.MODEL);
             logJson.put(Constants.osVerLogKey, "Android:" + Build.VERSION.RELEASE);
 
-            Log.e("crashLogJson", logJson.toString(4));
+            /* クラッシュログの可視化（Logcat） */
+            Log.e(Constants.crashLogFile, logJson.toString(4));
 
             /* ログファイルをローカルに保管するためにフォルダを作成する */
             File logDir = new File(context.getFilesDir(), Constants.logFolder);
             if (!logDir.exists()) logDir.mkdirs();
 
             /* ログファイルをローカルに保管する */
-            File crashLog = new File(logDir, Constants.logFile);
+            File crashLog = new File(logDir, Constants.crashLogFile);
             FileOutputStream outputFile = new FileOutputStream(crashLog);
             outputFile.write(logJson.toString().getBytes());
 

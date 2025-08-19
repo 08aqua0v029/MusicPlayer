@@ -1,26 +1,22 @@
 package ryo_original_app.musicplayer.constants;
 
+import ryo_original_app.musicplayer.BuildConfig;
+
 /**
  * 定数クラス
  */
 public class Constants {
-    /* URI関連 */
-        /*
-         * adb -s ZY22GXG7JX reverse tcp:8000 tcp:8000
-         * でAndroid実機でもローカルアクセスが簡単にできる
-         * ZY22GXG7JXは端末シリアル名
-         */
     /* クラッシュログAPI */
         /** ローカル環境のURI */
-        public static final String ApiUri = "http://localhost:8000/clashLogApi.php";
+        public static final String ApiUri = "http://localhost:8000/crashLogApi.php";
         /** 本番環境のURI */
         // public static final String ApiUri = "";
 
     /* BASIC認証用 */
         /** クラッシュログ用ユーザー名 */
-        public static final String clashLogBasicUser = "u6Kg5t2c";
+        public static final String crashLogBasicUser = BuildConfig.BASIC_USER;
         /** クラッシュログ用パスワード */
-        public static final String clashLogBasicPass = "Zp6uaUzY";
+        public static final String crashLogBasicPass = BuildConfig.BASIC_PASS;
 
     /* フォーマット */
         /** フォーマットとした日時 */
@@ -41,6 +37,20 @@ public class Constants {
         public static final String slashString = "/";
         /** 楽曲等時間初期値 */
         public static final String initialTime = "00:00";
+        /** ネットワーク */
+        public static final String networkString = "Network";
+        /** 成功タグ */
+        public static final String successTag = "SUCCESS";
+        /** エラータグ */
+        public static final String errorTag = "ERROR";
+        /** インフォメーションタグ */
+        public static final String infoTag = "INFO";
+        /** レスポンス */
+        public static final String responseString = "response";
+        /** コンテンツタイプ */
+        public static final String contentTypeString = "contentType";
+        /** サーバーステータス */
+        public static final String serverStatusString = "serverStatus";
         /** パーミッション許可文 */
         public static final String permissionSentence = "権限が許可されました";
         /** パーミッション非許可文 */
@@ -51,6 +61,12 @@ public class Constants {
         public static final String playErrorSentence = "再生エラー: ";
         /** 楽曲リスト曲数表示テキスト */
         public static final String tunesListSentence = "楽曲リスト:全 %s曲";
+        /** サーバーエラー文 */
+        public static final String severErrorSentence = "サーバー停止などの理由で転送不可";
+        /** ネットワーク未接続文 */
+        public static final String nonNetwork = "ネットワークに接続されていません";
+        /** ログファイルが存在しない場合の文 */
+        public static final String nonLogFile = "ログファイルが存在しません";
 
     /* フォルダ名、ファイル名 */
         /** 音楽保管フォルダ */
@@ -58,13 +74,16 @@ public class Constants {
         /** ログ保管フォルダ */
         public static final String logFolder = "log";
         /** ログファイル */
-        public static final String logFile = "crash_log.json";
+        public static final String crashLogFile = "crash_log.json";
 
     /* クラス名 */
         /** クラス名:MainActivity */
         public static final String mainActivityClass = "MainActivity";
         /** クラス名:TunesList */
         public static final String tunesListClass = "TunesList";
+
+    /* IDなどの通称 */
+        public static final String notificationId = "sound_notification_id";
 
     /* ログ関連 */
         /** クラッシュハンドラ */
@@ -81,7 +100,4 @@ public class Constants {
         public static final String modelLogKey = "buildModel";
         /** OSバージョンログ用キー */
         public static final String osVerLogKey = "buildOsVersion";
-
-    /* レスポンスコード */
-        // public static final int response200 = 200;
 }
