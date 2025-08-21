@@ -148,7 +148,6 @@
             android:layout_marginEnd="30dp"
             android:background="@color/white"
             android:enabled="false"
-            android:onClick="onBackButton"
             android:scaleType="fitCenter"
             android:src="@drawable/back" />
 
@@ -159,7 +158,6 @@
             android:layout_marginEnd="30dp"
             android:background="@color/white"
             android:enabled="false"
-            android:onClick="onPlayButton"
             android:scaleType="fitCenter"
             android:src="@drawable/start" />
 
@@ -169,7 +167,6 @@
             android:layout_height="80dp"
             android:background="@color/white"
             android:enabled="false"
-            android:onClick="onNextButton"
             android:scaleType="fitCenter"
             android:src="@drawable/next" />
     </LinearLayout>

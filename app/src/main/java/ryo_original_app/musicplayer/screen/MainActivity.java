@@ -26,6 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -56,10 +58,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Context context;
     /** タイマークラス */
     private MusicTimer musicTimer;
+    private ActivityResultLauncher<Intent> resultLauncher;
 
     /* UI関係 */
-        /** 再生・停止ボタン */
-        private ImageButton _btPlay;
+        /** 再生関連ボタン */
+        private ImageButton _btPlay, _btBack, _btNext;
         /** ジャケットファイル */
         private ImageView _artFile;
         /** 楽曲タイトル */
@@ -178,6 +181,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* 各種ボタン定義 */
         _btPlay = findViewById(R.id.btPlay);
+        _btBack = findViewById(R.id.btBack);
+        _btNext = findViewById(R.id.btNext);
+
+        _btPlay.setOnClickListener(this);
+        _btBack.setOnClickListener(this);
+        _btNext.setOnClickListener(this);
+
+        resultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result ->{
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Intent intent = result.getData();
+                        int selectTunesNum = intent.getIntExtra("selectTunesNum", 0);
+                        System.out.println(selectTunesNum);
+                    }
+                });
+
+        selectTuneListScreen();
     }
 
     /**
@@ -281,6 +302,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btPlay:
+                onPlay();
+                break;
+            case R.id.btBack:
+                onBack();
+                break;
+            case R.id.btNext:
+                onNext();
+                break;
+        }
     }
 
     /**
@@ -299,9 +331,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 再生・停止ボタン押下処理
-     * @param v View情報
      */
-    public void onPlayButton(View v) {
+    public void onPlay() {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
             musicTimer = new MusicTimer(this);
@@ -330,9 +361,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 戻るボタン押下処理
-     * @param v View情報
      */
-    public void onBackButton(View v) {
+    public void onBack() {
 
         long pressSystemTime = System.currentTimeMillis();    // 押下した時間計測のためシステムの時間を取り出す
 
@@ -371,9 +401,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 次ボタン押下処理
-     * @param v View情報
      */
-    public void onNextButton(View v) {
+    public void onNext() {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
             musicTimer = new MusicTimer(this);   // タイマーの呼び出し
@@ -536,7 +565,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
-                    onNextButton(null); // 次の楽曲へ
+                    onNext(); // 次の楽曲へ
                 }
             });
         } catch (IOException e) {
@@ -575,7 +604,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             /* 次画面への準備 */
             Intent intent = new Intent(this, TunesList.class);
             intent.putExtra("tunesList", tunesListTitle);
-            startActivity(intent);
+            resultLauncher.launch(intent);  // launchを行うことで、遷移先から戻る際、情報を持ってこれる
+            // startActivity(intent); // 本来の画面遷移（後学用に残している）
         });
+    }
+
+    /**
+     * サブ画面から、ListViewで選択した楽曲番号を取り出し、該当楽曲を再生できるようにする
+     *
+     */
+    private void selectTuneListScreen(){
+
+
     }
 }
