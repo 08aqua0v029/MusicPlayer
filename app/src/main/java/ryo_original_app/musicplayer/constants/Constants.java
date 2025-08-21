@@ -67,6 +67,8 @@ public class Constants {
         public static final String nonNetwork = "ネットワークに接続されていません";
         /** ログファイルが存在しない場合の文 */
         public static final String nonLogFile = "ログファイルが存在しません";
+        /** 無名 */
+        public static final String unknown = "Unknown";
 
     /* フォルダ名、ファイル名 */
         /** 音楽保管フォルダ */

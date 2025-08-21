@@ -54,6 +54,7 @@ import ryo_original_app.musicplayer.service.MediaPlaybackService;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Context context;
+    /** タイマークラス */
     private MusicTimer musicTimer;
 
     /* UI関係 */
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // フルスクリーンに設定
+            /* フルスクリーン設定 */
             getWindow().setDecorFitsSystemWindows(false);
             WindowInsetsController insetsController = getWindow().getInsetsController();
             if (insetsController != null) {
@@ -119,15 +120,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 );
             }
+        /* 旧ビルドバージョン用設定 */
         } else {
-            // 旧API向け
             getWindow().setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
             );
         }
 
-        // アクションバーがある場合は非表示
+        /* アクションバー非表示 */
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
