@@ -188,17 +188,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _btBack.setOnClickListener(this);
         _btNext.setOnClickListener(this);
 
+        /* 楽曲一覧画面から選択した楽曲番号を取得し再生する */
         resultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result ->{
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Intent intent = result.getData();
-                        int selectTunesNum = intent.getIntExtra("selectTunesNum", 0);
-                        System.out.println(selectTunesNum);
+                        /* 選択した楽曲番号を代入 */
+                        nowTuneNum = intent.getIntExtra("selectTunesNum", 0);
+
+                        _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+                        nowTune(nowTuneNum);    // 楽曲データ取得
+                        tuneSetup();            // 楽曲セットアップ
+                        mediaPlayer.start();    // プレイヤースタート
+                        musicTimer.startTimer(mediaPlayer);  // タイマー計測
+                        playState = MusicStatus.START.getId();          // 再生状態にする
+
                     }
                 });
-
-        selectTuneListScreen();
     }
 
     /**
@@ -600,14 +607,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             resultLauncher.launch(intent);  // launchを行うことで、遷移先から戻る際、情報を持ってこれる
             // startActivity(intent); // 本来の画面遷移（後学用に残している）
         });
-    }
-
-    /**
-     * サブ画面から、ListViewで選択した楽曲番号を取り出し、該当楽曲を再生できるようにする
-     *
-     */
-    private void selectTuneListScreen(){
-
-
     }
 }
