@@ -302,16 +302,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btPlay:
-                onPlay();
-                break;
-            case R.id.btBack:
-                onBack();
-                break;
-            case R.id.btNext:
-                onNext();
-                break;
+        int id = v.getId();
+        if (id == R.id.btPlay) {
+            onPlay();
+        } else if (id == R.id.btBack) {
+            onBack();
+        } else if (id == R.id.btNext) {
+            onNext();
         }
     }
 
@@ -330,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 再生・停止ボタン押下処理
+     * 再生・停止処理
      */
     public void onPlay() {
         /* 楽曲データの存在チェック */
@@ -360,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 戻るボタン押下処理
+     * 戻る再生処理
      */
     public void onBack() {
 
@@ -400,17 +397,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 次ボタン押下処理
+     * 次再生処理
      */
     public void onNext() {
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
             musicTimer = new MusicTimer(this);   // タイマーの呼び出し
-            /* 楽曲データの存在チェック */
-            if (Objects.isNull(tunesList)) {
-                Toast.makeText(this, Constants.nonMusicDate, Toast.LENGTH_SHORT).show();
-                return;
-            }
+
             /* 再生中の場合は楽曲を念の為止める */
             if (playState == MusicStatus.START.getId()) {
                 mediaPlayer.pause();
