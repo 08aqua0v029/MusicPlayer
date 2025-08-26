@@ -35,6 +35,8 @@ public class MusicTimer {
      */
     public MusicTimer(Activity activity) {
         this.activity = activity;
+        _tuneNowTime = activity.findViewById(R.id.tuneNowTime); // UIの再生時間のidを取得
+        _seekbar = activity.findViewById(R.id.seekbar); // UIのシークバーのidを取得
     }
 
     /**
@@ -47,29 +49,24 @@ public class MusicTimer {
         if(timerTask != null) {
             handler.removeCallbacks(timerTask);
         }
-        int totalTime = mediaPlayer.getDuration();
+
+        int totalTime = mediaPlayer.getDuration();  // ミリ秒単位で楽曲の総時間を取得
+        _seekbar.setMax(totalTime); // シークバーの最大値をミリ秒で設定
+
         /* マルチスレッド開始 */
         timerTask = new Runnable() {
             @Override
             public void run() {
-                _tuneNowTime = activity.findViewById(R.id.tuneNowTime); // UIの再生時間のidを取得
-                _seekbar = activity.findViewById(R.id.seekbar); // UIのシークバーのidを取得
-
                 /* メディアプレイヤーが起動しており、再生中であれば時間計測 */
                 if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                    int nowTime = mediaPlayer.getCurrentPosition();     // ミリ秒単位で楽曲の時間を取得
+                    int nowTime = mediaPlayer.getCurrentPosition();     // ミリ秒単位で楽曲の今の時間を取得
 
                     /* ミリ秒を変換し、文字列の00:00形式に変換 */
                     DataShaping shaping = new DataShaping();
                     tuneTotalTime = shaping.timeFormat(String.valueOf(nowTime));
 
-                    /* 再生時間が0秒でなければ、シークバーの計算を行う */
-                    if(mediaPlayer.getCurrentPosition() != 0) {
-                        seekPercentage = ((double) nowTime / totalTime) * 100;
-                    }
-
                     _tuneNowTime.setText(tuneTotalTime);         // 再生時間をUIにセット
-                    _seekbar.setProgress((int) seekPercentage);  // シークバーの進捗をUIにセット
+                    _seekbar.setProgress(nowTime);  // シークバーの進捗をUIにセット（ミリ秒）
                     handler.postDelayed(this, 1000); // 1秒ごとに更新
                 }else{
                     handler.removeCallbacks(this);

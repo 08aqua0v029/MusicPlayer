@@ -22,6 +22,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +72,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private TextView _tuneArtist;
         /** 1楽曲の総時間 */
         private TextView _tuneTotalTime;
+        /** 1楽曲の今の再生時間 */
+        private TextView _tuneNowTime;
+        /** シークバー */
+        private SeekBar _seekBar;
 
     /* 音楽ファイル関係 */
         /** メディアプレイヤーインスタンス */
@@ -91,6 +96,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String tuneTitle = "";
         /** 楽曲アーティスト名 */
         String tuneArtist = "";
+        /** メディアファイルの準備完了フラグ */
+        private boolean isPrepared = false;
+
 
     /**
      * 再生状態
@@ -179,19 +187,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _artFile = findViewById(R.id.artFile);
         _artFile.setImageResource(R.drawable.test_art);
 
-        /* 各種ボタン定義 */
+        /* 各種UI定義 */
         _btPlay = findViewById(R.id.btPlay);
         _btBack = findViewById(R.id.btBack);
         _btNext = findViewById(R.id.btNext);
+        _seekBar = findViewById(R.id.seekbar);
 
         _btPlay.setOnClickListener(this);
         _btBack.setOnClickListener(this);
         _btNext.setOnClickListener(this);
 
+        mediaPlayer = new MediaPlayer();    // メディアプレイヤー初期化
+
         /* 楽曲一覧画面から選択した楽曲番号を取得し再生する */
         resultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result ->{
+
+                    if(Objects.isNull(musicTimer)) {
+                        musicTimer = new MusicTimer(this);
+                    }
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Intent intent = result.getData();
                         /* 選択した楽曲番号を代入 */
@@ -206,6 +221,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     }
                 });
+
+        /* メディアファイルの準備完了 */
+        mediaPlayer.setOnPreparedListener(mp -> {
+            isPrepared = true;  // フラグを準備完了に
+            _seekBar.setMax(mp.getDuration());   // シークバーの最大値をミリ秒で設定
+        });
+
+        /* シークバーの処理 */
+        _seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            /**
+            * つまみが変更された時に処理が実行される
+            */
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                /* シークバーを操作していないときはつまみが変更された際の処理を通さない
+                 シークバーの位置のリアルタイム表示の多重起動を抑える */
+                if (!fromUser) {
+                    return;
+                }
+
+                mediaPlayer.seekTo(progress); // つまみを移動した場所にシークバーの進捗をUIにセット（ミリ秒）
+
+            }
+
+            /**
+            * ユーザーがタップ開始した時に処理が実行される
+            */
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            /**
+            * ユーザーがタップ終了した時に処理が実行される
+            */
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
     }
 
     /**
@@ -268,11 +319,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean networkConnect() {
         /* ネットワークの状態チェック */
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return false;
+        if (Objects.isNull(cm)) return false;
 
         /* アクティブな（Wifi、モバイル）通信のチェック */
         Network network = cm.getActiveNetwork();
-        if (network == null) return false;
+        if (Objects.isNull(network)) return false;
 
         /* 今まで取ってきたものは通信できるかどうかのチェック */
         NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
@@ -304,7 +355,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * クリック処理
-     * ※各ボタンのクリック処理を充てているので、反応しないようにしている
      * @param v View情報
      */
     @Override
@@ -375,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             musicTimer = new MusicTimer(this);   // タイマーの呼び出し
 
             /* メディアプレイヤーが起動していないのに戻るボタンを押下したら、処理を通さない */
-            if(mediaPlayer == null){
+            if(Objects.isNull(mediaPlayer)){
                 return;
             }
 
@@ -430,13 +480,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
                 musicTimer.startTimer(mediaPlayer);  // タイマー計測
-                playState = MusicStatus.START.getId();          // 再生状態にする
+                playState = MusicStatus.START.getId();         // 再生状態にする
             } else {
                 /* TODO: リピート機能未実装のため、総楽曲一周したら一度停止処理をかます */
                 nowTuneNum = 0;         // 楽曲番号のリセット
-                _btPlay.setImageResource(R.drawable.start);  // ボタン画像を変える
+                _btPlay.setImageResource(R.drawable.start);    // ボタン画像を変える
                 nowTune(nowTuneNum);    // 楽曲データ取得
                 tuneSetup();            // 楽曲セットアップ
+                _seekBar.setProgress((int) 0);                 // シークバーの進捗をUIにセット
+                _tuneNowTime.setText(Constants.initialTime);   // 再生時間をUIにセット
                 playState = MusicStatus.STOP.getId();          // 停止状態にする
             }
         });
