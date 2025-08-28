@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new ActivityResultContracts.StartActivityForResult(),
                 result ->{
 
+                    /* タイマー未起動時の処理で落ちるため、初期化処理 */
                     if(Objects.isNull(musicTimer)) {
                         musicTimer = new MusicTimer(this);
                     }
@@ -216,9 +217,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         nowTune(nowTuneNum);    // 楽曲データ取得
                         tuneSetup();            // 楽曲セットアップ
                         mediaPlayer.start();    // プレイヤースタート
-                        musicTimer.startTimer(mediaPlayer);  // タイマー計測
-                        playState = MusicStatus.START.getId();          // 再生状態にする
-
+                        musicTimer.startTimer(mediaPlayer);     // タイマー計測
+                        playState = MusicStatus.START.getId();  // 再生状態にする
                     }
                 });
 
@@ -237,12 +237,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 /* シークバーを操作していないときはつまみが変更された際の処理を通さない
                  シークバーの位置のリアルタイム表示の多重起動を抑える */
-                if (!fromUser) {
-                    return;
-                }
-
+                if (!fromUser) {return;}
                 mediaPlayer.seekTo(progress); // つまみを移動した場所にシークバーの進捗をUIにセット（ミリ秒）
-
             }
 
             /**

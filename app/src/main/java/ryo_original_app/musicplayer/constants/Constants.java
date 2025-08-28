@@ -8,7 +8,7 @@ import ryo_original_app.musicplayer.BuildConfig;
 public class Constants {
     /* クラッシュログAPI */
         /** ローカル環境のURI */
-        public static final String ApiUri = "http://localhost:8000/crashLogApi.php";
+        public static final String ApiUri = "http://localhost:8000/logApi/crashLogApi.php";
         /** 本番環境のURI */
         // public static final String ApiUri = "";
 
