@@ -7,9 +7,6 @@ import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,6 +43,7 @@ import ryo_original_app.musicplayer.Enum.MusicStatus;
 import ryo_original_app.musicplayer.constants.Constants;
 import ryo_original_app.musicplayer.convenience.DataShaping;
 import ryo_original_app.musicplayer.convenience.MusicTimer;
+import ryo_original_app.musicplayer.convenience.NetworkConnect;
 import ryo_original_app.musicplayer.log.CustomExceptionHandler;
 import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.log.SendLogApi;
@@ -90,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private int nowTuneNum = 0;
         /** 戻るボタン押下時の時間計測（計算するメソッドがLong型対応なので、それに合わせている） */
         private long backButtonPressTime  = 0;
+        /** 指定楽曲のメタデータ */
+        MediaMetadataRetriever tuneData;
         /** アートファイルデータ */
         byte[] artFileData;
         /** 楽曲タイトル */
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(context));
 
         /* ネットワーク接続状態なら、クラッシュJSONログのサーバー保存を行う */
-        if(networkConnect()) {
+        if(NetworkConnect.isConnected(context)) {
             SendLogApi.sendJsonLog(context, Constants.ApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
         }else{
             Log.d(Constants.networkString, Constants.nonNetwork);
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         nowTune(nowTuneNum);    // 楽曲データ取得
                         tuneSetup();            // 楽曲セットアップ
                         mediaPlayer.start();    // プレイヤースタート
-                        musicTimer.startTimer(mediaPlayer);     // タイマー計測
+                        musicTimer.startTimer(mediaPlayer, tuneData);     // タイマー計測
                         playState = MusicStatus.START.getId();  // 再生状態にする
                     }
                 });
@@ -309,25 +309,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * ネットワーク接続状態チェック
-     * @return 通信が可能な状態 or false
-     */
-    public boolean networkConnect() {
-        /* ネットワークの状態チェック */
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (Objects.isNull(cm)) return false;
-
-        /* アクティブな（Wifi、モバイル）通信のチェック */
-        Network network = cm.getActiveNetwork();
-        if (Objects.isNull(network)) return false;
-
-        /* 今まで取ってきたものは通信できるかどうかのチェック */
-        NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
-        return capabilities != null &&
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-    }
-
-    /**
      * 通知情報の更新
      */
     private void updateNotification() {
@@ -394,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
-                musicTimer.startTimer(mediaPlayer);  // タイマー計測
+                musicTimer.startTimer(mediaPlayer, tuneData);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else if (playState == MusicStatus.START.getId()) {
                 _btPlay.setImageResource(R.drawable.start); // ボタン画像を変える
@@ -403,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else if (playState == MusicStatus.PAUSE.getId()) {
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 mediaPlayer.start();    // 楽曲セットアップをせずに、一時停止したところから再生
-                musicTimer.startTimer(mediaPlayer);     // タイマー計測
+                musicTimer.startTimer(mediaPlayer, tuneData);     // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             }
         });
@@ -443,7 +424,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
             mediaPlayer.start();                        // プレイヤースタート
-            musicTimer.startTimer(mediaPlayer);         // タイマー計測
+            musicTimer.startTimer(mediaPlayer, tuneData);         // タイマー計測
             playState = MusicStatus.START.getId();      // 再生状態にする
             backButtonPressTime = pressSystemTime;      // 時刻の更新（押下した際のシステム時間を挿入）
         });
@@ -475,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 nowTune(nowTuneNum);    // 楽曲データ取得
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
-                musicTimer.startTimer(mediaPlayer);  // タイマー計測
+                musicTimer.startTimer(mediaPlayer, tuneData);  // タイマー計測
                 playState = MusicStatus.START.getId();         // 再生状態にする
             } else {
                 /* TODO: リピート機能未実装のため、総楽曲一周したら一度停止処理をかます */
@@ -560,8 +541,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _tuneTotalTime = findViewById(R.id.tuneTotalTime);
         _tuneArtist = findViewById(R.id.tuneArtist);
 
+        /* メタ情報取り出しのためのクラス */
+        tuneData = new MediaMetadataRetriever();
+
         /* メタデータ取り出し */
-        try(MediaMetadataRetriever tuneData = new MediaMetadataRetriever()) {   // メタ情報取り出しのためのクラス
+        try{
             tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
             tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
             tuneArtist = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);       // アーティスト名

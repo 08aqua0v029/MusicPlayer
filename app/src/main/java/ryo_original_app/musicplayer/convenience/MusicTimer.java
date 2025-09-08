@@ -1,13 +1,19 @@
 package ryo_original_app.musicplayer.convenience;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.app.Activity;
+import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import ryo_original_app.musicplayer.R;
+import ryo_original_app.musicplayer.constants.Constants;
+import ryo_original_app.musicplayer.log.SendLogApi;
 
 /**
  * 楽曲再生時間計測クラス
@@ -15,6 +21,7 @@ import ryo_original_app.musicplayer.R;
  */
 public class MusicTimer {
 
+    private Context context;
     /** 1楽曲の今の再生時間 */
     private TextView _tuneNowTime;
     private SeekBar _seekbar;
@@ -43,7 +50,7 @@ public class MusicTimer {
      * 時間計測処理
      * @param mediaPlayer メディアプレイヤー
      */
-    public void startTimer(MediaPlayer mediaPlayer) {
+    public void startTimer(MediaPlayer mediaPlayer, MediaMetadataRetriever tuneData) {
 
         /* タスクが残っていれば初期化 */
         if(timerTask != null) {
@@ -67,6 +74,9 @@ public class MusicTimer {
 
                     _tuneNowTime.setText(tuneTotalTime);         // 再生時間をUIにセット
                     _seekbar.setProgress(nowTime);  // シークバーの進捗をUIにセット（ミリ秒）
+
+                    nowPlayingLog(tuneData);
+
                     handler.postDelayed(this, 1000); // 1秒ごとに更新
                 }else{
                     handler.removeCallbacks(this);
@@ -84,6 +94,18 @@ public class MusicTimer {
         if (timerTask != null) {
             handler.removeCallbacks(timerTask);
             timerTask = null;
+        }
+    }
+
+    /**
+     * 再生中の楽曲データをSSE経由でログとして送信する
+     */
+    public void nowPlayingLog(MediaMetadataRetriever tuneData){
+        /* ネットワーク接続状態なら、再生中の楽曲データをサーバーに送る */
+        if(NetworkConnect.isConnected(context)) {
+
+        }else{
+            Log.d(Constants.networkString, Constants.nonNetwork);
         }
     }
 }
