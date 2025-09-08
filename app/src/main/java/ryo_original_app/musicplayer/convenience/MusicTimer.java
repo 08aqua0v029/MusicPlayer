@@ -8,20 +8,15 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import ryo_original_app.musicplayer.R;
-import ryo_original_app.musicplayer.constants.Constants;
-import ryo_original_app.musicplayer.log.SendLogApi;
 
 /**
  * 楽曲再生時間計測クラス
  * シークバー含む
  */
 public class MusicTimer {
-
-    private Context context;
     /** 1楽曲の今の再生時間 */
     private TextView _tuneNowTime;
     private SeekBar _seekbar;
@@ -50,7 +45,7 @@ public class MusicTimer {
      * 時間計測処理
      * @param mediaPlayer メディアプレイヤー
      */
-    public void startTimer(MediaPlayer mediaPlayer, MediaMetadataRetriever tuneData) {
+    public void startTimer(MediaPlayer mediaPlayer, MediaMetadataRetriever tuneData, Context context) {
 
         /* タスクが残っていれば初期化 */
         if(timerTask != null) {
@@ -59,6 +54,8 @@ public class MusicTimer {
 
         int totalTime = mediaPlayer.getDuration();  // ミリ秒単位で楽曲の総時間を取得
         _seekbar.setMax(totalTime); // シークバーの最大値をミリ秒で設定
+
+        boolean networkConnected = NetworkConnect.isConnected(context);
 
         /* マルチスレッド開始 */
         timerTask = new Runnable() {
@@ -75,7 +72,10 @@ public class MusicTimer {
                     _tuneNowTime.setText(tuneTotalTime);         // 再生時間をUIにセット
                     _seekbar.setProgress(nowTime);  // シークバーの進捗をUIにセット（ミリ秒）
 
-                    nowPlayingLog(tuneData);
+                    /* ネットワークが接続していればNowPlayingAPIへログを送信 */
+                    if(networkConnected) {
+                        sendPlayingLog(tuneData);
+                    }
 
                     handler.postDelayed(this, 1000); // 1秒ごとに更新
                 }else{
@@ -100,12 +100,7 @@ public class MusicTimer {
     /**
      * 再生中の楽曲データをSSE経由でログとして送信する
      */
-    public void nowPlayingLog(MediaMetadataRetriever tuneData){
-        /* ネットワーク接続状態なら、再生中の楽曲データをサーバーに送る */
-        if(NetworkConnect.isConnected(context)) {
-
-        }else{
-            Log.d(Constants.networkString, Constants.nonNetwork);
-        }
+    public void sendPlayingLog(MediaMetadataRetriever tuneData){
+        System.out.println("どう？？");
     }
 }

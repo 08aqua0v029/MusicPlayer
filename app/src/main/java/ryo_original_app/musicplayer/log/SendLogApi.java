@@ -2,13 +2,13 @@ package ryo_original_app.musicplayer.log;
 
 import android.content.Context;
 import android.util.Log;
-import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Base64;
+import java.util.Objects;
 
 import ryo_original_app.musicplayer.constants.Constants;
 
@@ -21,19 +21,14 @@ public class SendLogApi {
      * @param basicUser Basic認証User名
      * @param basicPass Basic認証Pass
      */
-    public static void sendJsonLog(Context context, String apiUri, String basicUser, String basicPass) {
-        /* ファイルの準備 */
-        File inputFile = new File(context.getFilesDir(), Constants.logFolder + Constants.slashString + Constants.crashLogFile);
+    public static void sendJsonLog(Context context, String apiUri, String jsonFile, String basicUser, String basicPass) throws IOException {
 
         /* JSONファイルの存在有無チェック */
-        if (inputFile.exists()){
+        if (Objects.nonNull(jsonFile)){
             /* 非同期処理開始 */
             new Thread(() -> {
                 /* HttpURLConnectionを使用したJSONファイル送信処理 */
                 try {
-                    /* JSONファイルをString化 */
-                    String json = new String(Files.readAllBytes(inputFile.toPath()), StandardCharsets.UTF_8);
-
                     /* サーバーへ送信作業 */
                     URL url = new URL(apiUri);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -49,7 +44,7 @@ public class SendLogApi {
 
                     /* 送信したいデータ（バイト配列）を送信 */
                     OutputStream os = connection.getOutputStream();
-                    os.write(json.getBytes(StandardCharsets.UTF_8));
+                    os.write(jsonFile.getBytes(StandardCharsets.UTF_8));
                     os.close();
 
                     /* レスポンス情報取得 */
@@ -57,9 +52,8 @@ public class SendLogApi {
                     String contentType = connection.getHeaderField("Content-Type");
                     String serverStatus = connection.getHeaderField("Status");
 
-                    /* レスポンスが200番台だったら成功とし、ファイルを削除 */
+                    /* レスポンスが200番台だったら成功とする */
                     if (responseCode >= 200 && responseCode < 300) {
-                        inputFile.delete();  // 削除
                         Log.d(Constants.successTag,
                                 Constants.responseString + Constants.colonString + String.valueOf(responseCode));
                         Log.d(Constants.successTag,
