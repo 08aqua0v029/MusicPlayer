@@ -34,11 +34,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Base64;
 import java.util.Objects;
 
 import ryo_original_app.musicplayer.Enum.MusicStatus;
@@ -98,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String tuneTitle = "";
         /** 楽曲アーティスト名 */
         String tuneArtist = "";
+        /** 楽曲情報を詰めた配列 */
+        JSONObject nowPlayingJson;
         /** メディアファイルの準備完了フラグ */
         private boolean isPrepared = false;
 
@@ -157,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String jsonFile = null;
             try {
                 jsonFile = new String(Files.readAllBytes(inputFile.toPath()), StandardCharsets.UTF_8);
-                SendLogApi.sendJsonLog(context, Constants.ApiUri, jsonFile, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
+                SendLogApi.sendJsonLog(jsonFile, Constants.crashLogApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -228,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         nowTune(nowTuneNum);    // 楽曲データ取得
                         tuneSetup();            // 楽曲セットアップ
                         mediaPlayer.start();    // プレイヤースタート
-                        musicTimer.startTimer(mediaPlayer, tuneData, context);     // タイマー計測
+                        musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);     // タイマー計測
                         playState = MusicStatus.START.getId();  // 再生状態にする
                     }
                 });
@@ -386,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
-                musicTimer.startTimer(mediaPlayer, tuneData, context);  // タイマー計測
+                musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);  // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             } else if (playState == MusicStatus.START.getId()) {
                 _btPlay.setImageResource(R.drawable.start); // ボタン画像を変える
@@ -395,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else if (playState == MusicStatus.PAUSE.getId()) {
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 mediaPlayer.start();    // 楽曲セットアップをせずに、一時停止したところから再生
-                musicTimer.startTimer(mediaPlayer, tuneData, context);     // タイマー計測
+                musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);     // タイマー計測
                 playState = MusicStatus.START.getId();          // 再生状態にする
             }
         });
@@ -435,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
             mediaPlayer.start();                        // プレイヤースタート
-            musicTimer.startTimer(mediaPlayer, tuneData, context);         // タイマー計測
+            musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);         // タイマー計測
             playState = MusicStatus.START.getId();      // 再生状態にする
             backButtonPressTime = pressSystemTime;      // 時刻の更新（押下した際のシステム時間を挿入）
         });
@@ -467,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 nowTune(nowTuneNum);    // 楽曲データ取得
                 tuneSetup();            // 楽曲セットアップ
                 mediaPlayer.start();    // プレイヤースタート
-                musicTimer.startTimer(mediaPlayer, tuneData, context);  // タイマー計測
+                musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);  // タイマー計測
                 playState = MusicStatus.START.getId();         // 再生状態にする
             } else {
                 /* TODO: リピート機能未実装のため、総楽曲一周したら一度停止処理をかます */
@@ -577,9 +582,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             /* アートファイルの導入 */
             artFileData = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
+            String base64artFile = Base64.getEncoder().encodeToString(artFileData); // 外部に送るためBase64形式に変換
+            String mimeType = "";
+
             if (null != artFileData) { // データが無ければnullにする
                 _artFile.setImageBitmap(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));   // 画像データの代入
+
+                // MIMEType取得
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length, options);
+                mimeType = options.outMimeType; // "image/jpeg" or "image/png" or etc.....
             }
+            /* メタデータを配列に詰める */
+            nowPlayingJson = new JSONObject();
+            nowPlayingJson.put(Constants.tuneTitleKey, tuneTitle);
+            nowPlayingJson.put(Constants.tuneArtistKey, tuneArtist);
+            nowPlayingJson.put(Constants.tuneNowTimeKey, Constants.initialTime);
+            nowPlayingJson.put(Constants.tuneTotalTimeKey, tuneTotalTime);
+            nowPlayingJson.put(Constants.tuneArtMimeTypeKey, mimeType);
+            nowPlayingJson.put(Constants.tuneArtKey, base64artFile);
 
             updateNotification();
 

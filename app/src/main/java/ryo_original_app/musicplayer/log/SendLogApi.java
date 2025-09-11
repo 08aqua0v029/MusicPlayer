@@ -1,6 +1,5 @@
 package ryo_original_app.musicplayer.log;
 
-import android.content.Context;
 import android.util.Log;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,12 +15,12 @@ public class SendLogApi {
     /**
      * JSONログをサーバーへ送信
      * 汎用ログ送信クラス
-     * @param context アプリの情報
+     * @param jsonFile 送信するJsonファイル
      * @param apiUri ログの送信先
      * @param basicUser Basic認証User名
      * @param basicPass Basic認証Pass
      */
-    public static void sendJsonLog(Context context, String apiUri, String jsonFile, String basicUser, String basicPass) throws IOException {
+    public static void sendJsonLog(String jsonFile,String apiUri, String basicUser, String basicPass) throws IOException {
 
         /* JSONファイルの存在有無チェック */
         if (Objects.nonNull(jsonFile)){

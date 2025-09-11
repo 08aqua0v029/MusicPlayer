@@ -4,13 +4,20 @@ import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.app.Activity;
 import android.content.Context;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 import ryo_original_app.musicplayer.R;
+import ryo_original_app.musicplayer.constants.Constants;
+import ryo_original_app.musicplayer.log.SendLogApi;
 
 /**
  * 楽曲再生時間計測クラス
@@ -25,7 +32,7 @@ public class MusicTimer {
     /** マルチスレッドのタスク（この場合、時間計測） */
     private Runnable timerTask;
     /** 1楽曲の再生時間 */
-    private String tuneTotalTime;
+    private String tuneNowTime;
     double seekPercentage;
     /** 任意の画面のアクティビティ */
     private Activity activity;
@@ -45,7 +52,7 @@ public class MusicTimer {
      * 時間計測処理
      * @param mediaPlayer メディアプレイヤー
      */
-    public void startTimer(MediaPlayer mediaPlayer, MediaMetadataRetriever tuneData, Context context) {
+    public void startTimer(MediaPlayer mediaPlayer, JSONObject nowPlayingJson, Context context) {
 
         /* タスクが残っていれば初期化 */
         if(timerTask != null) {
@@ -67,14 +74,14 @@ public class MusicTimer {
 
                     /* ミリ秒を変換し、文字列の00:00形式に変換 */
                     DataShaping shaping = new DataShaping();
-                    tuneTotalTime = shaping.timeFormat(String.valueOf(nowTime));
+                    tuneNowTime = shaping.timeFormat(String.valueOf(nowTime));
 
-                    _tuneNowTime.setText(tuneTotalTime);         // 再生時間をUIにセット
+                    _tuneNowTime.setText(tuneNowTime);         // 再生時間をUIにセット
                     _seekbar.setProgress(nowTime);  // シークバーの進捗をUIにセット（ミリ秒）
 
                     /* ネットワークが接続していればNowPlayingAPIへログを送信 */
                     if(networkConnected) {
-                        sendPlayingLog(tuneData);
+                        sendPlayingLog(nowPlayingJson, tuneNowTime);
                     }
 
                     handler.postDelayed(this, 1000); // 1秒ごとに更新
@@ -99,8 +106,15 @@ public class MusicTimer {
 
     /**
      * 再生中の楽曲データをSSE経由でログとして送信する
+     * @param nowPlayingJson Jsonでまとめた楽曲データ
+     * @param tuneNowTime 楽曲の再生時間（1秒ごとカウント）
      */
-    public void sendPlayingLog(MediaMetadataRetriever tuneData){
-        System.out.println("どう？？");
+    public void sendPlayingLog(JSONObject nowPlayingJson, String tuneNowTime){
+        try {
+            nowPlayingJson.put(Constants.tuneNowTimeKey, tuneNowTime);  // Jsonデータに今の再生時間を追加
+            SendLogApi.sendJsonLog(nowPlayingJson.toString(), Constants.nowPlayingApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
+        } catch (JSONException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -7,10 +7,18 @@ import ryo_original_app.musicplayer.BuildConfig;
  */
 public class Constants {
     /* クラッシュログAPI */
-        /** ローカル環境のURI */
-        public static final String ApiUri = "http://localhost:8000/logApi/crashLogApi.php";
-        /** 本番環境のURI */
-        // public static final String ApiUri = "";
+        /** クラッシュログローカル環境のURI */
+        public static final String crashLogApiUri = "http://localhost:8000/logApi/crashLogApi.php";
+        /** クラッシュログ本番環境のURI */
+        // public static final String CrashLogApiUri = "";
+
+    /* NowPlayingAPI */
+        /** NowPlayingAPIローカル環境のURI */
+        public static final String nowPlayingApiUri = "http://localhost:8000/nowPlaying/saveJson.php";
+
+        /** NowPlayingAPI本番環境のURI */
+        // public static final String nowPlayingApiUri = "";
+
 
     /* BASIC認証用 */
         /** クラッシュログ用ユーザー名 */
@@ -102,4 +110,18 @@ public class Constants {
         public static final String modelLogKey = "buildModel";
         /** OSバージョンログ用キー */
         public static final String osVerLogKey = "buildOsVersion";
+
+    /*NowPlaying機能関連*/
+        /** アーティスト名用キー */
+        public static final String tuneArtistKey = "tuneArtist";
+        /** 曲名用キー */
+        public static final String tuneTitleKey = "tuneTitle";
+        /* 埋め込みアートファイルのMimeType用キー */
+        public static final String tuneArtMimeTypeKey = "mimeType";
+        /** 埋め込みアートファイル用キー */
+        public static final String tuneArtKey = "tuneArt";
+        /** 総再生時間用キー */
+        public static final String tuneTotalTimeKey = "tuneTotalTime";
+        /** 今の再生時間用キー */
+        public static final String tuneNowTimeKey = "tuneNowTime";
 }
