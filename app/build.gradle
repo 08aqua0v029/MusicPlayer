@@ -63,6 +63,7 @@ dependencies {
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 
+    testImplementation libs.mockito.core
 
     // Import the Firebase BoM
     implementation platform(libs.firebase.bom)
