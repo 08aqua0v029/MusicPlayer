@@ -9,7 +9,7 @@ import java.util.Objects;
 public class NetworkConnect {
     /**
      * ネットワーク接続状態チェック
-     * @return 通信が可能な状態 or false
+     * @return 通信が可能な状態（true） or false
      */
     public static boolean isConnected(Context context) {
         ConnectivityManager cm = context.getSystemService(ConnectivityManager.class);
