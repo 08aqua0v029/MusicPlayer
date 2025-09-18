@@ -1,6 +1,10 @@
 package ryo_original_app.musicplayer.log;
 
 import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -73,6 +77,20 @@ public class SendLogApi {
             }).start();
         }else{
             Log.d(Constants.infoTag, Constants.nonLogFile);
+        }
+    }
+
+    /**
+     * 再生中の楽曲データをSSE経由でログとして送信する
+     * @param nowPlayingJson Jsonでまとめた楽曲データ
+     * @param tuneNowTime 楽曲の再生時間（1秒ごとカウント）
+     */
+    public static void sendPlayingLog(JSONObject nowPlayingJson, String tuneNowTime){
+        try {
+            nowPlayingJson.put(Constants.tuneNowTimeKey, tuneNowTime);  // Jsonデータに今の再生時間を追加
+            sendJsonLog(nowPlayingJson.toString(), Constants.nowPlayingApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
+        } catch (JSONException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

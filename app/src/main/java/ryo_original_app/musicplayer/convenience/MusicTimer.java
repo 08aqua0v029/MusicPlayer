@@ -81,7 +81,7 @@ public class MusicTimer {
 
                     /* ネットワークが接続していればNowPlayingAPIへログを送信 */
                     if(networkConnected) {
-                        sendPlayingLog(nowPlayingJson, tuneNowTime);
+                        SendLogApi.sendPlayingLog(nowPlayingJson, tuneNowTime);
                     }
 
                     handler.postDelayed(this, 1000); // 1秒ごとに更新
@@ -101,20 +101,6 @@ public class MusicTimer {
         if (timerTask != null) {
             handler.removeCallbacks(timerTask);
             timerTask = null;
-        }
-    }
-
-    /**
-     * 再生中の楽曲データをSSE経由でログとして送信する
-     * @param nowPlayingJson Jsonでまとめた楽曲データ
-     * @param tuneNowTime 楽曲の再生時間（1秒ごとカウント）
-     */
-    public void sendPlayingLog(JSONObject nowPlayingJson, String tuneNowTime){
-        try {
-            nowPlayingJson.put(Constants.tuneNowTimeKey, tuneNowTime);  // Jsonデータに今の再生時間を追加
-            SendLogApi.sendJsonLog(nowPlayingJson.toString(), Constants.nowPlayingApiUri, Constants.crashLogBasicUser, Constants.crashLogBasicPass);
-        } catch (JSONException | IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }
