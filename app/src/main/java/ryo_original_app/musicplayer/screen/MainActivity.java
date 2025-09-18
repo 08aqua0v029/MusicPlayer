@@ -59,10 +59,14 @@ import ryo_original_app.musicplayer.service.MediaPlaybackService;
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    /** コンテキスト */
     private Context context;
     /** タイマークラス */
     private MusicTimer musicTimer;
+    /** アクティビティ保持用 */
     private ActivityResultLauncher<Intent> resultLauncher;
+    /** インテント */
+    private Intent serviceIntent;
 
     /* UI関係 */
         /** 再生関連ボタン */
@@ -105,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         JSONObject nowPlayingJson;
         /** メディアファイルの準備完了フラグ */
         private boolean isPrepared = false;
-
 
     /**
      * 再生状態
@@ -189,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         /* 通知サービス（Foreground Service）の起動 */
-        Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+        serviceIntent = new Intent(this, MediaPlaybackService.class);
         startForegroundService(serviceIntent);  // Android 8以上必須
 
         /* ステータスバー削除処理 */
@@ -298,6 +301,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
+
+            boolean networkConnected = NetworkConnect.isConnected(context);
+
+            /* サーバー側のNowPlaying機能の表示データを初期化する */
+            cleanMetaData();
+
+            /* ネットワークが接続していればNowPlayingAPIへログを送信 */
+            if(networkConnected) {
+                SendLogApi.sendPlayingLog(nowPlayingJson, Constants.initialTime);
+            }
+
+            /* 通知を消す */
+            stopService(serviceIntent);
         }
     }
 
@@ -314,6 +330,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, Constants.permissionSentence, Toast.LENGTH_SHORT).show();
             tunesList = createTunesList();  // 許可されたので、楽曲リストを作成する
+
+            boolean networkConnected = NetworkConnect.isConnected(context);
+            /* ネットワークが接続していればNowPlayingAPIへログを送信 */
+            if(networkConnected) {
+                SendLogApi.sendPlayingLog(nowPlayingJson, Constants.initialTime);
+            }
         }  else {
             Toast.makeText(this, Constants.unauthorizedSentence, Toast.LENGTH_SHORT).show();
 
@@ -483,6 +505,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 _seekBar.setProgress((int) 0);                 // シークバーの進捗をUIにセット
                 _tuneNowTime.setText(Constants.initialTime);   // 再生時間をUIにセット
                 playState = MusicStatus.STOP.getId();          // 停止状態にする
+
+                boolean networkConnected = NetworkConnect.isConnected(context);
+                /* ネットワークが接続していればNowPlayingAPIへログを送信 */
+                if(networkConnected) {
+                    SendLogApi.sendPlayingLog(nowPlayingJson, Constants.initialTime);
+                }
             }
         });
     }
@@ -651,6 +679,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 楽曲データシャッフル
      */
     private void shuffleTuneData() {
+    }
+
+    /**
+     * メタデータ初期化
+     *
+     */
+    public void cleanMetaData() {
+        try {
+            nowPlayingJson = new JSONObject();
+            nowPlayingJson.put(Constants.tuneTitleKey, Constants.unknown);
+            nowPlayingJson.put(Constants.tuneArtistKey, Constants.unknown);
+            nowPlayingJson.put(Constants.tuneNowTimeKey, Constants.initialTime);
+            nowPlayingJson.put(Constants.tuneTotalTimeKey, Constants.initialTime);
+            nowPlayingJson.put(Constants.tuneArtMimeTypeKey, Constants.jpegMimeType);
+            nowPlayingJson.put(Constants.tuneArtKey, null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

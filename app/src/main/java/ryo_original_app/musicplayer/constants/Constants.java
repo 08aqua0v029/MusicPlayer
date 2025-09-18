@@ -77,6 +77,8 @@ public class Constants {
         public static final String nonLogFile = "ログファイルが存在しません";
         /** 無名 */
         public static final String unknown = "Unknown";
+        /** MIME TYPE */
+        public static final String jpegMimeType = "image/jpeg";
 
     /* フォルダ名、ファイル名 */
         /** 音楽保管フォルダ */
