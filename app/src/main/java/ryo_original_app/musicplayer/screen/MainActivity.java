@@ -408,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             /*
              * 再生停止処理　以下状態
              * 0:停止　1:再生　2:一時停止
-             * */
+             */
             if (playState == MusicStatus.STOP.getId()) {
                 _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
                 tuneSetup();            // 楽曲セットアップ
