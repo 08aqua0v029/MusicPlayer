@@ -338,7 +338,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             boolean networkConnected = NetworkConnect.isConnected(context);
             /* ネットワークが接続していればNowPlayingAPIへログを送信 */
-            if(networkConnected) {
+            /* 楽曲データが存在しない場合は通さないようにする */
+            if(networkConnected && tunesList.length > 0) {
                 SendLogApi.sendPlayingLog(nowPlayingJson, Constants.initialTime);
             }
         }  else {
@@ -380,12 +381,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.btPlay) {
+        /* 再生関連各種ボタン押下処理（楽曲がない場合は押下禁止） */
+        if (id == R.id.btPlay && tunesList.length > 0) {
             onPlay();
-        } else if (id == R.id.btBack) {
+        } else if (id == R.id.btBack && tunesList.length > 0) {
             onBack();
-        } else if (id == R.id.btNext) {
+        } else if (id == R.id.btNext && tunesList.length > 0) {
             onNext();
+        } else {
+            Toast.makeText(this, Constants.notTouchButton, Toast.LENGTH_SHORT).show();
         }
     }
 

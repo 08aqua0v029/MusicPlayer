@@ -75,6 +75,8 @@ public class Constants {
         public static final String nonNetwork = "ネットワークに接続されていません";
         /** ログファイルが存在しない場合の文 */
         public static final String nonLogFile = "ログファイルが存在しません";
+        /** ボタンタッチ不可の場合 */
+        public static final String notTouchButton = "ボタンのタップ許可が得られていません";
         /** 無名 */
         public static final String unknown = "Unknown";
         /** MIME TYPE */
