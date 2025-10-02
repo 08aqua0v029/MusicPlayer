@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -36,9 +37,12 @@ import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
@@ -205,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         /* アートファイル定義 */
         _artFile = findViewById(R.id.artFile);
-        _artFile.setImageResource(R.drawable.test_art);
+        _artFile.setImageResource(R.drawable.default_art);
 
         /* 各種UI定義 */
         _btPlay = findViewById(R.id.btPlay);
@@ -593,12 +597,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /* メタデータ取り出し */
         try{
             tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
-            tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);         // 楽曲タイトル
-            tuneArtist = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);       // アーティスト名
-            String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);  // 楽曲時間（ミリ秒）
 
-            /* 楽曲時間（ミリ秒）の変換作業 */
-            if(tuneTotalTime != null) {
+            /* 楽曲タイトルを取り出す nullなら規定文字を入れる */
+            tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            if(Objects.isNull(tuneTitle)){
+                tuneTitle = Constants.unknown;
+            }
+            /* 楽曲アーティストを取り出す nullなら規定文字を入れる */
+            tuneArtist = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            if(Objects.isNull(tuneArtist)){
+                tuneArtist = Constants.unknown;
+            }
+            /* 楽曲時間を取り出す（ミリ秒） */
+            String tuneTotalTime = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+            /* 楽曲時間（ミリ秒からXX:XX）の変換作業 */
+            if(!Objects.isNull(tuneTotalTime)) {
                 DataShaping shaping = new DataShaping();
                 tuneTotalTime = shaping.timeFormat(tuneTotalTime);
             } else {
@@ -611,18 +625,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             /* アートファイルの導入 */
             artFileData = tuneData.getEmbeddedPicture();    // メタファイルから取ったアートファイルをバイト配列に入れる
-            String base64artFile = Base64.getEncoder().encodeToString(artFileData); // 外部に送るためBase64形式に変換
-            String mimeType = "";
+            String base64artFile = "";
 
-            if (null != artFileData) { // データが無ければnullにする
-                _artFile.setImageBitmap(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));   // 画像データの代入
-
-                // MIMEType取得
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length, options);
-                mimeType = options.outMimeType; // "image/jpeg" or "image/png" or etc.....
+            /* アートファイルが存在しなければ、デフォルト画像(png)を入れる */
+            if (Objects.isNull(artFileData)) {
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.default_art);
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+                artFileData = os.toByteArray();
             }
+
+            base64artFile = Base64.getEncoder().encodeToString(artFileData); // 外部に送るためBase64形式に変換
+            _artFile.setImageBitmap(BitmapFactory.decodeByteArray(artFileData, 0, artFileData.length));   // 画像データの代入
+
+            // MIMEType取得
+            ByteArrayInputStream is = new ByteArrayInputStream(artFileData);
+            String mimeType = URLConnection.guessContentTypeFromStream(is);
+
             /* メタデータを配列に詰める */
             nowPlayingJson = new JSONObject();
             nowPlayingJson.put(Constants.tuneTitleKey, tuneTitle);
