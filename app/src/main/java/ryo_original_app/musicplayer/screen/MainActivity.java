@@ -54,6 +54,7 @@ import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.log.SendLogApi;
 import ryo_original_app.musicplayer.service.MediaPlaybackService;
 
+
 /**
  * メインクラス
  */
