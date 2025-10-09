@@ -728,13 +728,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param v View情報
      */
     public void onSubMenu(View v) {
+
         /* 楽曲データの存在チェック */
         runMusicDataCheck(() -> {
             String[] tunesListTitle = new String[totalTunesNum];  // 楽曲タイトルを配列化
 
             /* 楽曲タイトルをFile配列からString配列に代入 */
-            for (int i = 0; i < tunesList.length; i++) {
-                tunesListTitle[i] = tunesList[i].getName();
+            for (int i = 0; i < totalTunesNum; i++) {
+
+                /* メタ情報取り出しのためのクラス */
+                tuneData = new MediaMetadataRetriever();
+
+                /* メタデータ取り出し */
+                try {
+                    tuneData.setDataSource(tunesList[i].toString());        // URIをもとにデータをセットする
+
+                    /* 楽曲タイトルを取り出す nullなら規定文字を入れる */
+                    tuneTitle = tuneData.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+                    System.out.println(tuneTitle);
+                    if (Objects.isNull(tuneTitle)) {
+                        tuneTitle = Constants.unknown;
+                    }
+
+                    tunesListTitle[i] = tuneTitle;  // 配列に楽曲タイトルを代入
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             /* 次画面への準備 */
