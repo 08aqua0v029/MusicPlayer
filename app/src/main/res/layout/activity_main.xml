@@ -78,7 +78,7 @@
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="128dp"
+        android:layout_marginTop="104dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
@@ -118,17 +118,16 @@
 
     <SeekBar
         android:id="@+id/seekbar"
+        style="@style/CustomSeekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
-        app:layout_constraintVertical_bias="0.209"
+        app:layout_constraintVertical_bias="0.182"
         tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp"
-        style="@style/CustomSeekBar"/>
+        tools:layout_editor_absoluteX="0dp" />
 
     <LinearLayout
-        android:id="@+id/linearLayout3"
+        android:id="@+id/linearLayout4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -137,15 +136,25 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.849"
+        app:layout_constraintTop_toBottomOf="@+id/seekbar"
+        app:layout_constraintVertical_bias="0.245"
         tools:ignore="MissingConstraints">
 
         <ImageButton
-            android:id="@+id/btBack"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:id="@+id/btRepeat"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_marginEnd="30dp"
+            android:background="@color/white"
+            android:enabled="false"
+            android:scaleType="fitCenter"
+            android:src="@drawable/no_repeat" />
+
+        <ImageButton
+            android:id="@+id/btBack"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="20dp"
             android:background="@color/white"
             android:enabled="false"
             android:scaleType="fitCenter"
@@ -153,9 +162,9 @@
 
         <ImageButton
             android:id="@+id/btPlay"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginEnd="30dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="20dp"
             android:background="@color/white"
             android:enabled="false"
             android:scaleType="fitCenter"
@@ -163,25 +172,22 @@
 
         <ImageButton
             android:id="@+id/btNext"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="30dp"
             android:background="@color/white"
             android:enabled="false"
             android:scaleType="fitCenter"
             android:src="@drawable/next" />
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/linearLayout4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp">
-
+        <ImageButton
+            android:id="@+id/btShuffle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@color/white"
+            android:enabled="false"
+            android:scaleType="fitCenter"
+            android:src="@drawable/no_shuffle" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

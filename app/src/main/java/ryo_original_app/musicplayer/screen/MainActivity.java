@@ -49,6 +49,8 @@ import java.util.Base64;
 import java.util.Objects;
 
 import ryo_original_app.musicplayer.Enum.MusicStatus;
+import ryo_original_app.musicplayer.Enum.RepeatStatus;
+import ryo_original_app.musicplayer.Enum.ShuffleStatus;
 import ryo_original_app.musicplayer.constants.Constants;
 import ryo_original_app.musicplayer.convenience.DataShaping;
 import ryo_original_app.musicplayer.convenience.MusicTimer;
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /* UI関係 */
         /** 再生関連ボタン */
-        private ImageButton _btPlay, _btBack, _btNext;
+        private ImageButton _btPlay, _btBack, _btNext, _btRepeat, _btShuffle;
         /** ジャケットファイル */
         private ImageView _artFile;
         /** 楽曲タイトル */
@@ -120,6 +122,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 0:停止　1:再生　2:一時停止
      */
     private int playState = MusicStatus.STOP.getId();
+
+    /**
+     * リピート状態
+     * 0:リピート無効 1:全曲リピート 2:1曲リピート
+     */
+    private int repeatState = RepeatStatus.NO_REPEAT.getId();
+
+    /**
+     * シャッフル状態
+     * 0:シャッフル無効 1:シャッフル有効
+     */
+    private int shuffleState = ShuffleStatus.NO_SHUFFLE.getId();
 
     /**
      * 生成処理
@@ -215,11 +229,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         _btPlay = findViewById(R.id.btPlay);
         _btBack = findViewById(R.id.btBack);
         _btNext = findViewById(R.id.btNext);
+        _btRepeat = findViewById(R.id.btRepeat);
+        _btShuffle = findViewById(R.id.btShuffle);
         _seekBar = findViewById(R.id.seekbar);
 
         _btPlay.setOnClickListener(this);
         _btBack.setOnClickListener(this);
         _btNext.setOnClickListener(this);
+        _btRepeat.setOnClickListener(this);
+        _btShuffle.setOnClickListener(this);
 
         mediaPlayer = new MediaPlayer();    // メディアプレイヤー初期化
 
@@ -381,14 +399,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         int id = v.getId();
+
+        /* リピートボタン押下処理 */
+        if(id == R.id.btRepeat && repeatState == RepeatStatus.NO_REPEAT.getId()){
+            repeatState = RepeatStatus.ALL_REPEAT.getId();          // ステータスを変更
+            _btRepeat.setImageResource(R.drawable.all_repeat);      // ボタン画像を変える
+        }else if(id == R.id.btRepeat && repeatState == RepeatStatus.ALL_REPEAT.getId()){
+            repeatState = RepeatStatus.ONE_REPEAT.getId();          // ステータスを変更
+            _btRepeat.setImageResource(R.drawable.one_repeat);      // ボタン画像を変える
+        }else if(id == R.id.btRepeat && repeatState == RepeatStatus.ONE_REPEAT.getId()){
+            repeatState = RepeatStatus.NO_REPEAT.getId();           // ステータスを変更
+            _btRepeat.setImageResource(R.drawable.no_repeat);       // ボタン画像を変える
+        }
+
+        /* シャッフルボタン押下処理 */
+        if(id == R.id.btShuffle && shuffleState == ShuffleStatus.NO_SHUFFLE.getId()){
+            shuffleState = ShuffleStatus.SHUFFLE.getId();           // ステータスを変更
+            _btShuffle.setImageResource(R.drawable.shuffle);        // ボタン画像を変える
+        }else if(id == R.id.btShuffle && shuffleState == ShuffleStatus.SHUFFLE.getId()){
+            shuffleState = ShuffleStatus.NO_SHUFFLE.getId();        // ステータスを変更
+            _btShuffle.setImageResource(R.drawable.no_shuffle);     // ボタン画像を変える
+        }
+
         /* 再生関連各種ボタン押下処理（楽曲がない場合は押下禁止） */
-        if (id == R.id.btPlay && tunesList.length > 0) {
+        if(id == R.id.btPlay && tunesList.length > 0){
             onPlay();
-        } else if (id == R.id.btBack && tunesList.length > 0) {
+        }else if(id == R.id.btBack && tunesList.length > 0){
             onBack();
-        } else if (id == R.id.btNext && tunesList.length > 0) {
+        }else if(id == R.id.btNext && tunesList.length > 0){
             onNext();
-        } else {
+        }else if(Objects.isNull(tunesList)){
             Toast.makeText(this, Constants.notTouchButton, Toast.LENGTH_SHORT).show();
         }
     }
