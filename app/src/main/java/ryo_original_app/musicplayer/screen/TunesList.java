@@ -35,7 +35,7 @@ public class TunesList extends AppCompatActivity implements ListView.OnItemClick
 
         // 前画面から楽曲リストを取得
         Intent intent = getIntent();
-        String[] tunesList = intent.getStringArrayExtra("tunesList");
+        String[] tunesList = intent.getStringArrayExtra("tunesListTitle");
 
         // 画面定義
         _setTunesList = findViewById(R.id.tunesListMenu);

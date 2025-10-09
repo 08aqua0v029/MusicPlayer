@@ -758,7 +758,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             /* 次画面への準備 */
             Intent intent = new Intent(this, TunesList.class);
-            intent.putExtra("tunesList", tunesListTitle);
+            intent.putExtra("tunesListTitle", tunesListTitle);
             resultLauncher.launch(intent);  // launchを行うことで、遷移先から戻る際、情報を持ってこれる
             // startActivity(intent); // 本来の画面遷移（後学用に残している）
         });
