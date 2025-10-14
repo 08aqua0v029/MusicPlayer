@@ -1,6 +1,5 @@
 package ryo_original_app.musicplayer.convenience;
 
-import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,14 +9,11 @@ import android.os.Looper;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import ryo_original_app.musicplayer.R;
-import ryo_original_app.musicplayer.constants.Constants;
 import ryo_original_app.musicplayer.log.SendLogApi;
 
 /**
