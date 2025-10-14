@@ -66,7 +66,7 @@ public class MediaPlaybackService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Constants.notificationId)
                 .setSmallIcon(android.R.drawable.ic_media_play) // 左上表示用のアイコン
                 .setContentTitle(!Objects.isNull(title) ? title : Constants.unknown) // タイトル
-                .setContentText(!Objects.isNull(null) ? artist : Constants.unknown)   // アーティスト名
+                .setContentText(!Objects.isNull(artist) ? artist : Constants.unknown)   // アーティスト名
                 .setOngoing(true);   // 常駐通知設定
 
         if (!Objects.isNull(artBitmap)) {
