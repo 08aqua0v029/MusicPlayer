@@ -45,7 +45,9 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Objects;
 
 import ryo_original_app.musicplayer.Enum.MusicStatus;
@@ -98,6 +100,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private File fileDir;
         /** 楽曲一覧 */
         private File[] tunesList;
+        /** 一時保管用楽曲一覧 */
+        private File[] tmpTunesList;
+        /** シャッフル後の楽曲一覧 */
+        private File[] shuffleTunesList;
         /** 総楽曲数 */
         private int totalTunesNum = 0;
         /** 楽曲番号 */
@@ -400,34 +406,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         int id = v.getId();
 
-        /* リピートボタン押下処理 */
-        if(id == R.id.btRepeat && repeatState == RepeatStatus.NO_REPEAT.getId()){
-            repeatState = RepeatStatus.ALL_REPEAT.getId();          // ステータスを変更
-            _btRepeat.setImageResource(R.drawable.all_repeat);      // ボタン画像を変える
-        }else if(id == R.id.btRepeat && repeatState == RepeatStatus.ALL_REPEAT.getId()){
-            repeatState = RepeatStatus.ONE_REPEAT.getId();          // ステータスを変更
-            _btRepeat.setImageResource(R.drawable.one_repeat);      // ボタン画像を変える
-        }else if(id == R.id.btRepeat && repeatState == RepeatStatus.ONE_REPEAT.getId()){
-            repeatState = RepeatStatus.NO_REPEAT.getId();           // ステータスを変更
-            _btRepeat.setImageResource(R.drawable.no_repeat);       // ボタン画像を変える
-        }
+        /* 楽曲が存在すればボタン押下可能、存在しなければ押下禁止 */
+        if(tunesList.length > 0){
+            /* リピートボタン押下処理 */
+            if(id == R.id.btRepeat){
+                onRepeat();
+            }
 
-        /* シャッフルボタン押下処理 */
-        if(id == R.id.btShuffle && shuffleState == ShuffleStatus.NO_SHUFFLE.getId()){
-            shuffleState = ShuffleStatus.SHUFFLE.getId();           // ステータスを変更
-            _btShuffle.setImageResource(R.drawable.shuffle);        // ボタン画像を変える
-        }else if(id == R.id.btShuffle && shuffleState == ShuffleStatus.SHUFFLE.getId()){
-            shuffleState = ShuffleStatus.NO_SHUFFLE.getId();        // ステータスを変更
-            _btShuffle.setImageResource(R.drawable.no_shuffle);     // ボタン画像を変える
-        }
+            /* 楽曲一覧シャッフルボタン押下処理 */
+            if(id == R.id.btShuffle){
+                onShuffle();
+            }
 
-        /* 再生関連各種ボタン押下処理（楽曲がない場合は押下禁止） */
-        if(id == R.id.btPlay && tunesList.length > 0){
-            onPlay();
-        }else if(id == R.id.btBack && tunesList.length > 0){
-            onBack();
-        }else if(id == R.id.btNext && tunesList.length > 0){
-            onNext();
+            /* 再生関連各種ボタン押下処理 */
+            if(id == R.id.btPlay){
+                onPlay();
+            }else if(id == R.id.btBack){
+                onBack();
+            }else if(id == R.id.btNext){
+                onNext();
+            }
         }else if(Objects.isNull(tunesList)){
             Toast.makeText(this, Constants.notTouchButton, Toast.LENGTH_SHORT).show();
         }
@@ -562,6 +560,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
+    }
+
+    /**
+     * リピートボタン押下処理
+     */
+    public void onRepeat() {
+        if(repeatState == RepeatStatus.NO_REPEAT.getId()){
+            repeatState = RepeatStatus.ALL_REPEAT.getId();          // ステータスを変更
+            _btRepeat.setImageResource(R.drawable.all_repeat);      // ボタン画像を変える
+        }else if(repeatState == RepeatStatus.ALL_REPEAT.getId()){
+            repeatState = RepeatStatus.ONE_REPEAT.getId();          // ステータスを変更
+            _btRepeat.setImageResource(R.drawable.one_repeat);      // ボタン画像を変える
+        }else if(repeatState == RepeatStatus.ONE_REPEAT.getId()){
+            repeatState = RepeatStatus.NO_REPEAT.getId();           // ステータスを変更
+            _btRepeat.setImageResource(R.drawable.no_repeat);       // ボタン画像を変える
+        }
+    }
+
+    /**
+     * シャッフルボタン押下処理（シャッフル機能を使うと、1曲目に戻す仕様）
+     */
+    public void onShuffle() {
+        if(shuffleState == ShuffleStatus.NO_SHUFFLE.getId()){
+            /* 楽曲リストをシャッフルする */
+            tmpTunesList = Arrays.copyOf(tunesList, tunesList.length);  // シャッフル初期化用にリストを一時保管
+            Collections.shuffle(Arrays.asList(tunesList));          // リストをシャッフル
+            shuffleState = ShuffleStatus.SHUFFLE.getId();           // ステータスを変更
+            _btShuffle.setImageResource(R.drawable.shuffle);        // ボタン画像を変える
+        }else if(shuffleState == ShuffleStatus.SHUFFLE.getId()){
+            tunesList = Arrays.copyOf(tmpTunesList, tmpTunesList.length);  // リストを元に戻す
+            shuffleState = ShuffleStatus.NO_SHUFFLE.getId();        // ステータスを変更
+            _btShuffle.setImageResource(R.drawable.no_shuffle);     // ボタン画像を変える
+        }
+
+        musicTimer = new MusicTimer(this);   // タイマーの呼び出し
+
+        /* 再生中の場合は楽曲を念の為止める */
+        if (playState == MusicStatus.START.getId()) {
+            mediaPlayer.pause();
+            mediaPlayer.seekTo(0);
+        }
+
+        mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
+
+        _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+        nowTune(0);           // 楽曲データ取得（使用上1曲目に戻す）
+        tuneSetup();            // 楽曲セットアップ
+        mediaPlayer.start();    // プレイヤースタート
+        musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);  // タイマー計測
+        playState = MusicStatus.START.getId();         // 再生状態にする
     }
 
     /**
@@ -729,20 +777,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (IOException e) {
             Toast.makeText(this, Constants.playErrorSentence + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-    }
-
-    /**
-     * TODO:全体実装後とりかかる
-     * 楽曲データリピート
-     */
-    private void repeatTuneData() {
-    }
-
-    /**
-     * TODO:全体実装後とりかかる
-     * 楽曲データシャッフル
-     */
-    private void shuffleTuneData() {
     }
 
     /**
