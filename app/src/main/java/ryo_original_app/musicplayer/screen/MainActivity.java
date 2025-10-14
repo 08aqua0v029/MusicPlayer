@@ -102,8 +102,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private File[] tunesList;
         /** 一時保管用楽曲一覧 */
         private File[] tmpTunesList;
-        /** シャッフル後の楽曲一覧 */
-        private File[] shuffleTunesList;
         /** 総楽曲数 */
         private int totalTunesNum = 0;
         /** 楽曲番号 */
