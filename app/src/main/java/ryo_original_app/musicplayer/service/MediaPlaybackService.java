@@ -13,6 +13,8 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import java.util.Objects;
+
 import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.constants.Constants;
 
@@ -40,7 +42,7 @@ public class MediaPlaybackService extends Service {
                     NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) manager.createNotificationChannel(channel);
+            if (!Objects.isNull(manager)) manager.createNotificationChannel(channel);
         }
     }
 
@@ -56,18 +58,18 @@ public class MediaPlaybackService extends Service {
         Bitmap artBitmap = null;
 
         /* 一時保管しているアートファイルを参照する */
-        if (artPath != null) {
+        if (!Objects.isNull(artPath)) {
             artBitmap = BitmapFactory.decodeFile(artPath);
         }
 
         /* 通知の作成 */
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Constants.notificationId)
                 .setSmallIcon(android.R.drawable.ic_media_play) // 左上表示用のアイコン
-                .setContentTitle(title != null ? title : Constants.unknown) // タイトル
-                .setContentText(artist != null ? artist : Constants.unknown)   // アーティスト名
+                .setContentTitle(!Objects.isNull(title) ? title : Constants.unknown) // タイトル
+                .setContentText(!Objects.isNull(null) ? artist : Constants.unknown)   // アーティスト名
                 .setOngoing(true);   // 常駐通知設定
 
-        if (artBitmap != null) {
+        if (!Objects.isNull(artBitmap)) {
             builder.setLargeIcon(artBitmap);    // アートファイル
         }
 
@@ -78,7 +80,7 @@ public class MediaPlaybackService extends Service {
 
         /* 逐一通知を更新する */
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (manager != null) manager.notify(NOTIFICATION_ID, notification);
+        if (!Objects.isNull(manager)) manager.notify(NOTIFICATION_ID, notification);
 
         return START_STICKY;
     }

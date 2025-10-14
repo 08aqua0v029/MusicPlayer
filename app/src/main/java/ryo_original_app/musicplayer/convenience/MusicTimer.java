@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import ryo_original_app.musicplayer.R;
 import ryo_original_app.musicplayer.constants.Constants;
@@ -55,7 +56,7 @@ public class MusicTimer {
     public void startTimer(MediaPlayer mediaPlayer, JSONObject nowPlayingJson, Context context) {
 
         /* タスクが残っていれば初期化 */
-        if(timerTask != null) {
+        if(!Objects.isNull(timerTask)) {
             handler.removeCallbacks(timerTask);
         }
 
@@ -69,7 +70,7 @@ public class MusicTimer {
             @Override
             public void run() {
                 /* メディアプレイヤーが起動しており、再生中であれば時間計測 */
-                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                if (!Objects.isNull(mediaPlayer) && mediaPlayer.isPlaying()) {
                     int nowTime = mediaPlayer.getCurrentPosition();     // ミリ秒単位で楽曲の今の時間を取得
 
                     /* ミリ秒を変換し、文字列の00:00形式に変換 */
@@ -98,7 +99,7 @@ public class MusicTimer {
      * アプリDestroy時、バグを防ぐため、タイマーを止める処理
      */
     public void stopTimer() {
-        if (timerTask != null) {
+        if (!Objects.isNull(timerTask)) {
             handler.removeCallbacks(timerTask);
             timerTask = null;
         }
