@@ -498,8 +498,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             /* 1秒以内に2回押下したなら1曲前に戻る */
             if(pressSystemTime - backButtonPressTime < 1000) {
                 mediaPlayer = new MediaPlayer();    // mediaPayer初期化
-                /* 0番目の楽曲以外の場合1曲前へ戻す */
-                if(nowTuneNum > 0){
+                /* 0番目の楽曲、1楽曲リピートをしていない場合は1曲前へ戻す */
+                if(nowTuneNum > 0  && repeatState != RepeatStatus.ONE_REPEAT.getId()){
                     nowTuneNum--;   // 1曲前へ
                 }
                 nowTune(nowTuneNum);    // 楽曲データ取得
@@ -529,20 +529,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
 
-            /* 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット */
-            /* 楽曲番号が0スタートのため、総楽曲数を -1 しないと整合性がとれない */
+            /*
+             * 総楽曲数まではnowTuneNumをカウントし、総楽曲数以上のカウントになった場合はカウントをリセット
+             * リピート機能が効いている場合、再生のまま、効いていない場合は1曲目で停止
+             * 1楽曲リピート機能が効いている場合は、次の楽曲には進まない
+             * 楽曲番号が0スタートのため、総楽曲数を -1 しないと整合性がとれない
+             */
             /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！検証用に使う */
             //if (totalTunesNum > nowTuneNum) {
             if (totalTunesNum -1 > nowTuneNum) {
-                nowTuneNum++;
-                _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
-                nowTune(nowTuneNum);    // 楽曲データ取得
-                tuneSetup();            // 楽曲セットアップ
-                mediaPlayer.start();    // プレイヤースタート
-                musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);  // タイマー計測
-                playState = MusicStatus.START.getId();         // 再生状態にする
-            } else {
-                /* TODO: リピート機能未実装のため、総楽曲一周したら一度停止処理をかます */
+                if(repeatState != RepeatStatus.ONE_REPEAT.getId()) {
+                    nowTuneNum++;
+                }
+                onNextPlay();
+            }else if(repeatState == RepeatStatus.ALL_REPEAT.getId()) {
+                /* 全楽曲がリピートされている場合 */
+                nowTuneNum = 0;         // 楽曲番号のリセット
+                onNextPlay();
+            }else{
+                /* 楽曲リピートされていない場合 */
                 nowTuneNum = 0;         // 楽曲番号のリセット
                 _btPlay.setImageResource(R.drawable.start);    // ボタン画像を変える
                 nowTune(nowTuneNum);    // 楽曲データ取得
@@ -558,6 +563,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
+    }
+
+    public void onNextPlay(){
+        _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
+        nowTune(nowTuneNum);    // 楽曲データ取得
+        tuneSetup();            // 楽曲セットアップ
+        mediaPlayer.start();    // プレイヤースタート
+        musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);  // タイマー計測
+        playState = MusicStatus.START.getId();         // 再生状態にする
     }
 
     /**
@@ -603,7 +617,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayer = new MediaPlayer();    // MediaPlayerの初期化
 
         _btPlay.setImageResource(R.drawable.stop);  // ボタン画像を変える
-        nowTune(0);           // 楽曲データ取得（使用上1曲目に戻す）
+        nowTuneNum = 0;
+        nowTune(nowTuneNum);           // 楽曲データ取得（使用上1曲目に戻す）
         tuneSetup();            // 楽曲セットアップ
         mediaPlayer.start();    // プレイヤースタート
         musicTimer.startTimer(mediaPlayer, nowPlayingJson, context);  // タイマー計測
