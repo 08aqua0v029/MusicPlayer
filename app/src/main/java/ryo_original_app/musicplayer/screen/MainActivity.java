@@ -538,6 +538,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             /* TODO: ここの数字 -1 を消すと簡単にアプリをクラッシュできる！検証用に使う */
             //if (totalTunesNum > nowTuneNum) {
             if (totalTunesNum -1 > nowTuneNum) {
+                /* 1楽曲リピートされていない場合、次の楽曲へ移る処理を通す */
                 if(repeatState != RepeatStatus.ONE_REPEAT.getId()) {
                     nowTuneNum++;
                 }
@@ -547,17 +548,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 nowTuneNum = 0;         // 楽曲番号のリセット
                 onNextPlay();
             }else{
-                /* 楽曲リピートされていない場合 */
-                nowTuneNum = 0;         // 楽曲番号のリセット
-                _btPlay.setImageResource(R.drawable.start);    // ボタン画像を変える
-                nowTune(nowTuneNum);    // 楽曲データ取得
-                tuneSetup();            // 楽曲セットアップ
-                _seekBar.setProgress((int) 0);                 // シークバーの進捗をUIにセット
-                _tuneNowTime.setText(Constants.initialTime);   // 再生時間をUIにセット
-                playState = MusicStatus.STOP.getId();          // 停止状態にする
+                if(repeatState == RepeatStatus.ONE_REPEAT.getId()) {
+                    /* 最終楽曲が1楽曲リピートされている場合 */
+                    onNextPlay();
+                }else{
+                    /* 以下リピートされていない場合 */
+                    nowTuneNum = 0;         // 楽曲番号のリセット
+                    _btPlay.setImageResource(R.drawable.start);    // ボタン画像を変える
+                    nowTune(nowTuneNum);    // 楽曲データ取得
+                    tuneSetup();            // 楽曲セットアップ
+                    _seekBar.setProgress((int) 0);                 // シークバーの進捗をUIにセット
+                    _tuneNowTime.setText(Constants.initialTime);   // 再生時間をUIにセット
+                    playState = MusicStatus.STOP.getId();          // 停止状態にする
+                }
 
-                boolean networkConnected = NetworkConnect.isConnected(context);
                 /* ネットワークが接続していればNowPlayingAPIへログを送信 */
+                boolean networkConnected = NetworkConnect.isConnected(context);
                 if(networkConnected) {
                     SendLogApi.sendPlayingLog(nowPlayingJson, Constants.initialTime);
                 }
@@ -649,8 +655,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         && (filenameString.toLowerCase().endsWith(Constants.mp3String)
                         || filenameString.toLowerCase().endsWith(Constants.wavString)
                         || filenameString.toLowerCase().endsWith(Constants.m4aString))) {
-                    repairTunesList[totalTunesNum] = file;
-                    totalTunesNum++;
+                    /* ファイル破損チェック */
+                    if (damageFileCheck(file.getAbsolutePath())) {
+                        repairTunesList[totalTunesNum] = file;
+                        totalTunesNum++;
+                    } else {
+                        Log.w("MusicScan", "破損または非対応形式: " + file.getName());
+                    }
                 }
             }
 
@@ -789,6 +800,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         } catch (IOException e) {
             Toast.makeText(this, Constants.playErrorSentence + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * 音楽ファイル破損チェック
+     */
+    private boolean damageFileCheck(String filePath) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(filePath);
+            /* 再生時間を取得することで、ファイルの破損チェックを行う */
+            String playTime = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            return playTime != null;    // 再生時間があればtrue、nullならfalse
+        } catch (Exception e) {
+            return false;   // エラーがあった場合は問答無用でfalse
+        } finally {
+            /* MediaMetadataRetrieverを確実に開放する */
+            try {
+                retriever.release();
+            } catch (Exception ignored) {}
         }
     }
 
